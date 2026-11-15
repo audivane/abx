@@ -60,7 +60,8 @@ curl -fLO https://github.com/audivane/abx/releases/download/1.0.0/audivane_1.0.0
 sudo apt install ./audivane_1.0.0_amd64.deb
 
 # Arch Linux
-sudo pacman -U https://github.com/audivane/abx/releases/download/1.0.0/audivane-bin-1.0.0-1-x86_64.pkg.tar.zst
+curl -fLO https://github.com/audivane/abx/releases/download/1.0.0/audivane-bin-1.0.0-1-x86_64.pkg.tar.zst
+sudo pacman -U ./audivane-bin-1.0.0-1-x86_64.pkg.tar.zst
 ```
 
 Every release ships SHA-256 checksums and the matching source, codec build
