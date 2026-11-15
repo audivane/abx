@@ -1,0 +1,16 @@
+{
+  "name": "@codec-abx/client",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@codec-abx/contracts": "1.0.0",
+    "@codec-abx/engine-browser": "1.0.0",
+    "@codec-abx/experiment-browser": "1.0.0",
+    "@codec-abx/playback": "1.0.0",
+    "@codec-abx/preparation": "1.0.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}

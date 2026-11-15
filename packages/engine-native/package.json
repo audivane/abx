@@ -1,0 +1,17 @@
+{
+  "name": "@codec-abx/engine-native",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/typescript/index.ts",
+    "./typescript": "./src/typescript/index.ts"
+  },
+  "dependencies": {
+    "@codec-abx/contracts": "1.0.0",
+    "@codec-abx/measurements": "1.0.0",
+    "@codec-abx/preparation-policy": "1.0.0",
+    "@codec-abx/preparation": "1.0.0"
+  }
+}
