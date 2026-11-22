@@ -4,7 +4,6 @@ import type { PlaybackLabel, PreparedArtifact } from "@codec-abx/contracts";
 
 import { formatClock } from "../format.js";
 import { deviceLabel } from "../workspace/OutputDevicePanel.js";
-import type { ClientRuntimeKind } from "../runtime.js";
 import type { ListeningHook } from "./useListening.js";
 import {
   calibrationMaterialAdvice,
@@ -15,35 +14,6 @@ import { trialStartGateBlocker } from "./readiness.js";
 import { useListeningShortcuts, useShortcutsEnabled } from "./shortcuts.js";
 import type { RunTally } from "./useRunTally.js";
 import { TrialTally } from "./TrialTally.js";
-
-function artifactRuntime(
-  artifact: PreparedArtifact | null,
-  fallback: ClientRuntimeKind,
-): {
-  readonly native: boolean;
-  readonly preparation: string;
-  readonly experiment: string;
-  readonly local: string;
-} {
-  const native =
-    artifact === null
-      ? fallback === "desktop"
-      : artifact.engine.location === "desktop-native";
-  return native
-    ? {
-        native: true,
-        preparation:
-          "desktop-native shared aligned-gain-matched-v1 prepared via the Electron main process’s private worker",
-        experiment: "main-process private-worker experiment service",
-        local: "desktop-native local self-test",
-      }
-    : {
-        native: false,
-        preparation: "browser-local shared aligned-gain-matched-v1",
-        experiment: "dedicated experiment Worker",
-        local: "browser-local local self-test",
-      };
-}
 
 export type ListeningPrimaryPhase =
   | "idle"
@@ -69,7 +39,6 @@ export interface ListeningPrimary {
 export interface ListeningSectionProps {
   readonly artifact: PreparedArtifact | null;
   readonly listening: ListeningHook;
-  readonly runtimeKind: ClientRuntimeKind;
   readonly primary: ListeningPrimary;
   /** The Listen view is the visible view; keyboard shortcuts apply only then. */
   readonly active: boolean;
@@ -123,7 +92,6 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
 
   const eligibility = listeningArtifactEligibility(artifact);
   const rawArtifact = isRawCodecProbeArtifact(artifact);
-  const runtime = artifactRuntime(artifact, props.runtimeKind);
   const playback = state.playback;
   const output = playback?.output;
   const trial = state.trial;
@@ -411,7 +379,7 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
       {state.session === "fatal" && (
         <div className="status-error" role="alert">
           <strong>This listening run is unavailable.</strong>{" "}
-          {state.error?.message ?? `The ${runtime.experiment} failed.`} No
+          {state.error?.message ?? "The dedicated experiment Worker failed."} No
           export is claimed to exist for the lost run. Start a new run
           explicitly; the runtime is never recreated silently.
           <div className="actions">

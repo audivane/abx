@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 /**
- * Tests that exercise the production TypeScript/native/desktop/tooling paths.
- * The full development commands run the complete unit/browser sets.
+ * Tests that exercise the production browser TypeScript/tooling paths. The
+ * full development commands run the complete unit/browser sets.
  */
 export const productionUnitFiles = Object.freeze([
   'packages/contracts/test/request.test.ts',
@@ -20,17 +20,6 @@ export const productionUnitFiles = Object.freeze([
   'packages/measurements/test/wav.test.ts',
   'packages/measurements/test/relation.test.ts',
   'packages/measurements/test/loudness-streaming.test.ts',
-  'packages/engine-native/test/typescript-codecs-executor.test.ts',
-  'packages/engine-native/test/typescript-codecs-groups.test.ts',
-  'packages/engine-native/test/typescript-codecs-lifecycle.test.ts',
-  'packages/engine-native/test/typescript-codecs-probe.test.ts',
-  'packages/engine-native/test/typescript-codecs-process.test.ts',
-  'packages/engine-native/test/typescript-pcm-chunks.test.ts',
-  'packages/engine-native/test/typescript-preparation.test.ts',
-  'packages/engine-native/test/typescript-preparation-validity.test.ts',
-  'packages/engine-native/test/typescript-readiness.test.ts',
-  'packages/engine-native/test/typescript-source-format.test.ts',
-  'packages/engine-native/test/typescript-source-import.test.ts',
   'packages/experiment-browser/test/client.test.ts',
   'packages/experiment-browser/test/protocol.test.ts',
   'packages/experiment-browser/test/worker.test.ts',
@@ -39,7 +28,6 @@ export const productionUnitFiles = Object.freeze([
   'packages/experiment/test/preparation-validity.test.ts',
   'packages/experiment/test/service.test.ts',
   'packages/experiment/test/statistics.test.ts',
-  'packages/playback/test/desktop-client.test.ts',
   'packages/playback/test/listening-controller.test.ts',
   'packages/playback/test/output.test.ts',
   'packages/playback/test/player.test.ts',
@@ -52,24 +40,11 @@ export const productionUnitFiles = Object.freeze([
   'packages/preparation-policy/test/preparation-policy.test.ts',
   'packages/preparation-policy/test/canary-excerpt.test.ts',
   'packages/preparation-policy/test/validity-canary.test.ts',
-  'packages/tooling/test/resources.test.ts',
   'apps/client/test/preparation-lifecycle.test.ts',
   'apps/client/test/listening-eligibility.test.ts',
   'apps/client/test/listening-fast-start.test.ts',
   'apps/client/test/ambiguity.test.ts',
-  'apps/desktop/test/boundary.test.ts',
-  'apps/desktop/test/prepared-artifact.test.ts',
-  'apps/desktop/test/runtime.test.ts',
-  'apps/desktop/test/worker-runtime.test.ts',
-  'apps/desktop/test/worker-errors.test.ts',
-  'apps/desktop/test/zoom.test.ts',
   'tools/test/audio-output-analysis.test.mjs',
-  'tools/test/profile-acceptance.test.mjs',
-  'tools/test/native-bundle.test.mjs',
-  'tools/test/distribution.test.mjs',
-  'tools/test/release-pipeline.test.mjs',
-  'tools/test/arch-distribution.test.mjs',
-  'tools/test/provenance.test.mjs',
   'tools/test/font-subsets.test.mjs',
   'tools/test/production-contract.test.mjs',
   'tools/test/unit-args.test.mjs',
@@ -77,9 +52,8 @@ export const productionUnitFiles = Object.freeze([
 ]);
 
 /**
- * Browser acceptance that runs against the standard client build. The
- * supplemental LC3/LDAC specification stays in the dedicated eleven-codec
- * browser lane because it needs the separate WASM build.
+ * Browser acceptance that runs against the standard client build, including
+ * the eleven-codec supplemental LC3/LDAC lane.
  */
 export const productionBrowserFiles = Object.freeze([
   'tests/e2e/audio-import.spec.ts',
@@ -93,14 +67,10 @@ export const productionBrowserFiles = Object.freeze([
   'tests/e2e/playback.spec.ts',
   'tests/e2e/preparation-lab.spec.ts',
   'tests/e2e/preparation-policy.spec.ts',
+  'tests/e2e/supplemental-codecs.spec.ts',
   'tests/e2e/ui-codec-chains.spec.ts',
   'tests/e2e/validity-canary.spec.ts',
   'tests/e2e/workspace.spec.ts',
-]);
-
-/** The existing audited packaged run, including its spawn-denial controls. */
-export const productionDesktopFiles = Object.freeze([
-  'apps/desktop/test/package.electron.ts',
 ]);
 
 function source(relative) {
@@ -109,13 +79,12 @@ function source(relative) {
 
 /**
  * Fail before a production run when a required file disappeared, or the
- * independent evidence gate or audited package controls were weakened.
+ * independent evidence gate was weakened.
  */
 export function assertProductionSelection() {
   const lists = [
     ['unit', productionUnitFiles],
     ['browser', productionBrowserFiles],
-    ['desktop', productionDesktopFiles],
   ];
   const seen = new Set();
   for (const [label, files] of lists) {
@@ -134,22 +103,14 @@ export function assertProductionSelection() {
   assert.match(independent, /CODEC_ABX_REQUIRE_INDEPENDENT_LOUDNESS/,
     'independent loudness check must fail closed when the production lane requires it');
 
-  const packageTest = source('apps/desktop/test/package.electron.ts');
-  assert.match(packageTest, /chromiumSandbox:\s*true/, 'packaged acceptance must enable the Chromium sandbox');
-  assert.match(packageTest, /CODEC_ABX_SPAWN_ALLOWLIST/, 'packaged acceptance must enforce the native-tool allowlist');
-  assert.match(packageTest, /spawn-audit\.cjs/, 'packaged acceptance must load the audited spawn seam');
-  assert.doesNotMatch(packageTest, /--no-sandbox/, 'packaged acceptance must not disable the Chromium sandbox');
-
   for (const required of [
-    'packages/engine-native/test/typescript-codecs-executor.test.ts',
-    'packages/engine-native/test/typescript-preparation.test.ts',
+    'packages/engine-browser/test/codec-plan.test.ts',
     'packages/preparation-policy/test/independent-policy.test.ts',
-    'apps/desktop/test/worker-runtime.test.ts',
     'tools/test/verification.test.mjs',
   ]) {
     assert.ok(productionUnitFiles.includes(required), `production unit coverage is missing ${required}`);
   }
-  for (const required of ['codec-chains', 'listening-flow', 'ui-codec-chains']) {
+  for (const required of ['codec-chains', 'listening-flow', 'supplemental-codecs', 'ui-codec-chains']) {
     assert.ok(productionBrowserFiles.some(file => file.includes(required)),
       `production browser coverage is missing ${required}`);
   }

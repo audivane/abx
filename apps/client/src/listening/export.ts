@@ -78,7 +78,6 @@ export function buildListeningExport(input: ListeningExportInput): ListeningExpo
     },
   };
   const canaryAudio = artifact.canary?.audio ?? null;
-  const desktop = artifact.engine.location === "desktop-native";
   const playbackPolicy = {
     adapter: "BrowserTrialPlayer",
     selectionTransition: {
@@ -150,14 +149,13 @@ export function buildListeningExport(input: ListeningExportInput): ListeningExpo
       sealIsNotAFinalResult: snapshot.lifecycle === "sealed",
       humanValidation: "not performed",
       runtime: {
-        preparation: desktop ? "desktop-native" : "browser-local",
-        experiment: desktop ? "electron-main" : "browser-module-worker",
+        preparation: "browser-local",
+        experiment: "browser-module-worker",
         playback: "shared-webaudio",
         outputChannels: "unknown",
       },
-      localCustody: desktop
-        ? "desktop-native local-self-test; the Electron main process’s private worker owns the experiment service but is not tamper-proof custody"
-        : "browser-local local-self-test; the dedicated module Worker is not tamper-proof custody",
+      localCustody:
+        "browser-local local-self-test; the dedicated module Worker is not tamper-proof custody",
       claims: {
         hearingValidated: false,
         audibilityProven: false,

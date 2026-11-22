@@ -1,35 +1,26 @@
 // Verify the bundled font subsets against third_party/fonts.json.
 //
-// Two family policies are recorded in the manifest. A family with a
-// Reserved Font Name (IBM Plex: "Plex") ships as a renamed Latin subset whose
-// primary name records carry an Audivane Latin family; a family without one
-// (Inter, Instrument Serif) ships its pinned @fontsource subset byte for byte.
+// A family with a Reserved Font Name (IBM Plex: "Plex") ships as a renamed
+// Latin subset whose primary name records carry an Audivane Latin family; a
+// family without one (Inter, Instrument Serif) ships its pinned @fontsource
+// subset byte for byte.
 //
 // Decodes each WOFF2 with no third-party dependencies and confirms: the
-// manifest inventory matches the bundled files exactly (no missing, stale or
-// duplicate entries, no family without files) with its license, family
-// policies and pinned fonttools version intact; the recorded file hashes;
-// for renamed families, primary name records based on the recorded family and
-// free of the reserved name, plus the preserved copyright, OFL license URL,
-// nameID 13 license text and PostScript name; for unmodified families, bytes
-// identical to the recorded upstream original and the upstream copyright and
-// family records; each family's OFL notice beside every directory that
-// bundles it; and a content fingerprint over every stored WOFF2 table except
-// `name` and the head table's checkSumAdjustment (bytes 8..11), which the
-// WOFF2 format requires to change whenever the file bytes change. Copies
-// sharing an upstream original must produce identical results. The manifest
-// records the fingerprint computed from the original upstream subset as
-// originalContentSha256 and the check requires the bundled subset's
-// fingerprint to equal it, so the evidence is not self-attesting. Anyone can
-// independently reproduce the recorded original fingerprint from the
-// upstream files: `node tools/check-subset-fonts.mjs --fingerprint <file>`
-// prints the fingerprint of any WOFF2, renamed or original.
+// manifest inventory matches the bundled files exactly, with its license,
+// family policies and pinned fonttools version intact; the recorded file
+// hashes; renamed name records free of the reserved name with copyright, OFL
+// license URL, license text and PostScript records preserved; unmodified bytes
+// identical to the recorded upstream original; each family's OFL notice beside
+// every directory that bundles it; and a content fingerprint over every stored
+// table except `name` and the head table's checkSumAdjustment (bytes 8..11),
+// which WOFF2 requires to change with the file bytes. That fingerprint must
+// equal the manifest's originalContentSha256, taken from the upstream subset,
+// so the evidence is not self-attesting. Reproduce it for any WOFF2 with
+// `node tools/check-subset-fonts.mjs --fingerprint <file>`.
 //
-// `--update` recomputes contentSha256 from disk after confirming every
-// recorded sha256 matches and every originalContentSha256 is recorded; the
-// bundled-vs-original fingerprint equality is still enforced.
-// tools/rename-subset-fonts.py invokes it to finish a regeneration. Run
-// directly as `npm run check:fonts`.
+// `--update` recomputes contentSha256 from disk after confirming every recorded
+// sha256 matches; tools/rename-subset-fonts.py invokes it to finish a
+// regeneration. Run as `npm run check:fonts`.
 
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";

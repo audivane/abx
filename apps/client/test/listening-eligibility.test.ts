@@ -9,7 +9,7 @@ import {
 } from "../src/listening/model.js";
 
 function artifact(options: {
-  readonly location?: "browser-local" | "desktop-native";
+  readonly location?: "browser-local" | "optional-server";
   readonly enginePolicy?: "codec-probe-only" | "aligned-gain-matched-v1";
   readonly requestPolicy?: "codec-probe-only" | "aligned-gain-matched-v1";
   readonly preparation?: boolean;

@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.0 (2026-11-22)
+
+Audivane ABX is browser-only from this release.
+
+- The app is served at <https://audivane.app/abx/> and can be found by search
+  engines. The previous `/abx/demo/` address redirects there.
+- The desktop app (Electron with native codecs) is archived. Its `1.0.0`
+  downloads stay on GitHub Releases and its source is kept at the
+  `desktop-final` tag.
+- Same eleven codecs in the browser, including the supplemental LC3 and LDAC
+  WASM modules.
+- Browser tests and the site bundle now build without Electron, native
+  tooling or installer packaging.
+- Documentation and licence materials describe the browser distribution only.
+- Share a test setup (both codec chains and the plan) as a link or a QR code.
+  The setup travels in the link's `#` part, so it never reaches a server;
+  audio and results are never included.
+
 ## 1.0.0
 
 First public release of Audivane ABX.

@@ -10,13 +10,10 @@
  * ---------------
  * * `n` is intentionally bounded to 0..1000. A direct factorial translation
  *   would overflow JavaScript numbers. The 50% tail therefore uses a BigInt
- *   numerator divided once by 2**n (a power of two, so the division is exact
- *   apart from the final IEEE-754 rounding). The general-p tail used by the CI
- *   uses a normalized log-term recurrence so no term is raised to a large
- *   power as a big integer.
- * * The CI bisection does at most 400 bounded passes over at most n+1 terms;
- *   no large integer power is formed.
- * * Accepted error budget (independently verified against exact binomial arithmetic):
+ *   numerator divided once by 2**n (exact apart from the final IEEE-754
+ *   rounding); the general-p tail uses a normalized log-term recurrence.
+ * * The CI bisection does at most 400 bounded passes over at most n+1 terms.
+ * * Accepted error budget, verified against exact binomial arithmetic:
  *   p-values <= 1e-12 absolute, rounded CI <= 1e-6, thresholds/Holm decisions
  *   exact.
  */

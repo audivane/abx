@@ -66,11 +66,10 @@ PreparationLifecycleState<Source, Artifact> {
  * Owns the renderer preparation lifecycle: retained artifact ownership, run
  * identity, cancellation and reset transitions.
  *
- * A release clears published artifact state only after the engine confirms it.
- * On failure the artifact (or a late stale artifact) stays owned and is retried
- * by the next explicit start/reset/choose-source transition. Sample URLs are
- * revoked before the attempt so a failed cleanup never leaves stale audio on
- * screen, and every failure is reported instead of being presented as success.
+ * A release clears published artifact state only after the engine confirms it;
+ * on failure the artifact stays owned and the next explicit start/reset/
+ * choose-source transition retries it. Sample URLs are revoked before the
+ * attempt, and every failure is reported rather than presented as success.
  */
 export class PreparationLifecycle<Source, Artifact extends { readonly id: string }> {
   readonly #deps: PreparationLifecycleDeps<Source, Artifact>;

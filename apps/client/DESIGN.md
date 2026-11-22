@@ -3,10 +3,10 @@
 ## Design contract
 
 Guided mode. The approved reference is the November 2026 redesign mockup
-(`website/design/mockups-2026-11/abx-app.html`, copper accent). The interface
-is a three-step flow — Setup, Listen, Results — in one centred column. It is
-a presentation layer only: do not change the test method, scoring, gating,
-preparation, evidence or export contracts to simplify the UI.
+(copper accent). The interface is a three-step flow — Setup, Listen, Results —
+in one centred column. It is a presentation layer only: do not change the test
+method, scoring, gating, preparation, evidence or export contracts to simplify
+the UI.
 
 Do not add explanatory copy for obvious controls or expose internal function
 names, policy identifiers, hashes or raw JSON as ordinary page content. Do
@@ -32,9 +32,7 @@ app's skins (`dsp/app/src/styles/tokens.css`). Keep them in sync by copying
 values, not by importing across repositories.
 
 Light is warm paper, shared with the website and DSP: `--bg #f5f3ee`,
-`--panel #fffdf9`, `--panel-2 #f0ece4`, warm greys for lines and text. It
-replaced the cool blue-grey light, which clashed with the website's paper
-and muddied the copper.
+`--panel #fffdf9`, `--panel-2 #f0ece4`, warm greys for lines and text.
 
 The accent is copper:
 
@@ -104,7 +102,7 @@ Each step is a button with `data-state`:
 - Listen opens once something is preparing, staged, terminal or needs a
   retry; it is done when the run is terminal.
 - Results opens once prepared audio or a run exists. During a running test it
-  stays reachable, as Evidence was, for redacted exports and run management.
+  stays reachable for redacted exports and run management.
 
 Right: "Local · nothing uploaded" badge (shortened, then hidden, on narrow
 widths), the theme menu and the ⓘ About and diagnostics dialog. The dialog
@@ -118,7 +116,7 @@ Shown under the top bar while a test is preparing or held (any view): file,
 A chain vs B chain, plan summary and output device, then either "Locked
 during the test" with End test (running), "Preparing · setup locked"
 (preparing), or the lifecycle chip (terminal), with View results when on
-Setup. It replaces the old sidebar and keeps one row down to 720px (plan
+Setup. It keeps one row down to 720px (plan
 and output drop out first). On phones it wraps: the file on its own line,
 then the chains, then the End test row, whose height is reserved so the
 player does not move when preparing turns into running.
@@ -144,6 +142,11 @@ Two columns (main + 340px side) that collapse below 1000px.
   disclosure, validation and Apply plan when a run is configured), Output
   device (select, Refresh, chooser when exposed, Routing details), and
   Prepare test → with its hint or the reason it is blocked.
+- Shared test links (`#a=opus-128&b=aac-256&trials=16&labels=blind`) fill the source-free setup on load and show
+  a banner (summary, the sharer's file when included, unavailable codecs,
+  Clear); the fragment is then removed. Nothing prepares or plays until the
+  user picks a file and presses Prepare test. "Copy test link" sits under
+  Prepare test; Results offers "Share this test".
 - While a test holds the setup, a lock banner explains it; controls stay in
   place, disabled, and Replace becomes "Locked during the test".
 
@@ -170,9 +173,8 @@ Max 900px wide.
   a disabled player. Cancelled or stopped preparation uses the same empty
   state with its own title and Retry prepare test.
 
-Feedback during a run is unchanged: the Correct/Incorrect slot after each
-answer, nothing cumulative. Per-trial chips appear only once the run is
-terminal, as before.
+Feedback during a run: the Correct/Incorrect slot after each answer, nothing
+cumulative. Per-trial chips appear only once the run is terminal.
 
 ### Keyboard shortcuts
 
@@ -256,6 +258,10 @@ sections). Respect reduced motion.
 - `listening/RunRecord.tsx` and `listening/explanation.ts`: verdict,
   explanation, stats and Test details.
 - `listening/RunActions.tsx`: Results actions.
+- `share/ShareDialog.tsx`, `share/qr.ts`, `share/summary.ts`: the share
+  dialog (link, QR code with the brand mark, PNG/SVG) and the setup summary.
+  The link format lives in `@codec-abx/contracts`
+  (`shared-test.ts`).
 - `evidence/AudioComparison.tsx`: labelled A/B players, downloads,
   measurements and diagnostic files.
 - `styles.css`: tokens, layout, components and responsive rules.

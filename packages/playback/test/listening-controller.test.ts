@@ -4,7 +4,6 @@ import { test } from "node:test";
 import type {
   AnswerReceipt,
   CodecId,
-  DesktopRuntimeFailure,
   ExperimentExport,
   ExperimentPlan,
   ExperimentSnapshot,
@@ -23,6 +22,7 @@ import {
   ListeningController,
   type ListeningClient,
   type ListeningReaders,
+  type ListeningRuntimeFailure,
 } from "../../../apps/client/src/listening/controller.js";
 import { LISTENING_EXPORT_SCHEMA } from "../../../apps/client/src/listening/export.js";
 import { attachOutputDiscovery } from "../../../apps/client/src/listening/useListening.js";
@@ -216,23 +216,6 @@ const RAW_ARTIFACT = {
   preparation: undefined,
 } as unknown as PreparedArtifact;
 
-const NATIVE_ARTIFACT = {
-  ...ARTIFACT,
-  engine: {
-    ...ARTIFACT.engine,
-    engineId: "engine-native-typescript",
-    location: "desktop-native",
-    preparationPolicy: "aligned-gain-matched-v1",
-    supportedPreparationPolicies: ["aligned-gain-matched-v1"],
-  },
-  measurements: { ...ARTIFACT.measurements, policy: "aligned-gain-matched-v1" },
-} as unknown as PreparedArtifact;
-
-const UNSUPPORTED_NATIVE_ARTIFACT = {
-  ...NATIVE_ARTIFACT,
-  request: { ...NATIVE_ARTIFACT.request, preparationPolicy: "unknown-policy-v0" as never },
-} as unknown as PreparedArtifact;
-
 function statistics(plan: ExperimentPlan, correct: number, scored: number): ExperimentSnapshot["statistics"] {
   return {
     scoredTrials: scored,
@@ -301,12 +284,12 @@ class FakeClient implements ListeningClient {
   disposeCalls = 0;
   sealed = false;
   behavior: Behavior = {};
-  fatalListener: ((failure: DesktopRuntimeFailure) => void) | null = null;
+  fatalListener: ((failure: ListeningRuntimeFailure) => void) | null = null;
   fatalSubscribes = 0;
   fatalUnsubscribes = 0;
   #sequence = 0;
 
-  onFatal(listener: (failure: DesktopRuntimeFailure) => void): () => void {
+  onFatal(listener: (failure: ListeningRuntimeFailure) => void): () => void {
     this.fatalSubscribes += 1;
     this.fatalListener = listener;
     return () => {
@@ -315,7 +298,7 @@ class FakeClient implements ListeningClient {
     };
   }
 
-  emitFatal(failure: DesktopRuntimeFailure): void {
+  emitFatal(failure: ListeningRuntimeFailure): void {
     this.fatalListener?.(failure);
   }
 
@@ -787,30 +770,6 @@ test("listening controller refuses raw artifacts before creating a Worker", asyn
   assert.match(controller.state.error?.message ?? "", /aligned-gain-matched-v1/);
 });
 
-test("listening controller accepts the shared native engine and refuses unsupported native artifacts", async () => {
-  const accepted = makeController();
-  await accepted.controller.prepareSession(PLAN, NATIVE_ARTIFACT, READERS);
-  assert.equal(accepted.client.bindCalls, 1);
-  assert.equal(accepted.controller.state.session, "configured");
-  assert.equal(
-    accepted.controller.state.snapshot?.prepared?.preparationLocation,
-    "desktop-native",
-  );
-
-  let clients = 0;
-  const refused = new ListeningController({
-    createClient: () => {
-      clients += 1;
-      return new FakeClient();
-    },
-    createPlayer: () => new FakePlayer(),
-  });
-  await refused.prepareSession(PLAN, UNSUPPORTED_NATIVE_ARTIFACT, READERS);
-  assert.equal(clients, 0);
-  assert.equal(refused.state.error?.code, "artifact-invalid");
-  assert.match(refused.state.error?.message ?? "", /engine-native-typescript/);
-});
-
 test("confirmed answers auto-advance continuously, then require an explicit new-trial pick", async () => {
   const { client, player, controller } = makeController();
   await controller.prepareSession(PLAN, ARTIFACT, READERS);
@@ -1104,7 +1063,7 @@ test("idle fatal notification stops playing audio, blocks answers/export and inv
 
   client.emitFatal({
     code: "worker-fatal",
-    message: "Desktop worker stopped. Close and restart the application.",
+    message: "Experiment worker stopped. Close and restart the application.",
     reasons: ["worker exited"],
     uncertain: false,
   });
@@ -1138,7 +1097,7 @@ test("fatal notification during a held trial load supersedes the late result", a
   assert.equal(player.loadCalls.length, 1);
   client.emitFatal({
     code: "protocol-error",
-    message: "Desktop worker protocol failed.",
+    message: "Experiment worker protocol failed.",
     reasons: [],
     uncertain: false,
   });

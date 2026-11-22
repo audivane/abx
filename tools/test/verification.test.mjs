@@ -6,7 +6,7 @@ import os from 'node:os';
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createServer } from 'node:http';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { createSession, loopbackURL } from '../verification/session.mjs';
 import { acquirePipeLock, cachedBuild, fingerprint, lockResourceName, withLock } from '../verification/cache.mjs';
 import { taskkillExecutable } from '../verification/windows.mjs';
@@ -242,24 +242,6 @@ test('owned commands retain the output gate if their launcher is killed', { time
   await exited;
   await withLock(lock, async () => assert.equal(await fs.readFile(completed, 'utf8'), 'completed'));
 });
-
-test('desktop packaging and production import graph use the staged native bundle', async () => {
-  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-  const packageScript = await fs.readFile(path.join(root, 'tools/verification/desktop-package.mjs'), 'utf8');
-  // An explicit native bundle is the only extraResource source. It is staged,
-  // validated and hash-checked rather than discovered from PATH.
-  assert.match(packageScript, /stageNativeBundle/);
-  assert.match(packageScript, /verifyPackagedNativeBundle/);
-  assert.match(packageScript, /extraResource[\s\S]*staged\.extraResource/);
-  const buildScript = await fs.readFile(path.join(root, 'tools/verification/build.mjs'), 'utf8');
-  assert.match(buildScript, /build\/verification-native-mode-\$\{platform\}-\$\{arch\}\.json/);
-  assert.match(buildScript, /resolveNativeBundleRequest/);
-  for (const file of ['main.ts', 'runtime-worker.ts', 'worker-runtime.ts', 'runtime.ts', 'prepared-artifact.ts']) {
-    const source = await fs.readFile(path.join(root, 'apps/desktop/src', file), 'utf8');
-    assert.doesNotMatch(source, /@codec-abx\/engine-native"/, `${file} must use the separate TypeScript export`);
-  }
-});
-
 
 test('pipe lock holder retains the gate in a build after its launcher dies', { timeout: 15_000 }, async t => {
   const root = await fixture(t);

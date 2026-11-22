@@ -65,7 +65,7 @@ export interface PreparedIdentity {
   readonly engineId: string;
   readonly engineBuild: string;
   readonly request: PreparationRequest;
-  readonly preparationLocation: "desktop-native" | "browser-local" | "optional-server";
+  readonly preparationLocation: "browser-local" | "optional-server";
 }
 
 export interface CanaryBinding {
@@ -808,8 +808,7 @@ export async function validatePreparedArtifact(
   const engine = record(value.engine, "artifact engine");
   const engineId = text(engine.engineId, "artifact engine id");
   const engineBuild = text(engine.build, "artifact engine build");
-  if (engine.location !== "desktop-native" &&
-      engine.location !== "browser-local" &&
+  if (engine.location !== "browser-local" &&
       engine.location !== "optional-server") {
     invalid("artifact engine location is invalid");
   }

@@ -77,7 +77,7 @@ export interface ExperimentSnapshot {
     readonly engineId: string;
     readonly engineBuild: string;
     readonly request: PreparationRequest;
-    readonly preparationLocation: "desktop-native" | "browser-local" | "optional-server";
+    readonly preparationLocation: "browser-local" | "optional-server";
   } | null;
   readonly pendingTrial: PublicTrial | null;
   /** Lets a client reconcile an uncertain submission without answering a new trial. */

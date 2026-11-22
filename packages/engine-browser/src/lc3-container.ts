@@ -1,12 +1,12 @@
 /**
- * Byte-exact LC3 raw container (FFmpeg `lc3` muxer format), for the browser's
+ * Byte-exact LC3 raw container (FFmpeg `lc3` muxer format) for the browser's
  * supplemental liblc3 codec.
  *
- * The pinned @ffmpeg/core 0.12.10 has no LC3 codec or muxer, so the supplemental
- * codec encodes frames with a WASM build of pinned liblc3 1.1.3 and assembles
- * the Bluetooth SIG test-suite bitstream that FFmpeg's `lc3` raw muxer writes.
- * Keeping the container identical to the native side means a native
- * ffmpeg/liblc3 command can decode browser-encoded bytes and vice versa.
+ * The pinned @ffmpeg/core 0.12.10 has no LC3 codec or muxer, so a WASM build of
+ * pinned liblc3 1.1.3 encodes frames and this module assembles the Bluetooth
+ * SIG test-suite bitstream that FFmpeg's `lc3` raw muxer writes. Identical
+ * container bytes let a native ffmpeg/liblc3 command decode browser output and
+ * vice versa.
  *
  * Byte layout (all fields little-endian except the leading tag, per
  * libavformat/lc3.c in FFmpeg 9.0.2):
@@ -22,9 +22,9 @@
  *   wl16 hr_mode       only when hr_mode != 0 (header size 20)
  * then per frame: wl16 size, size payload bytes.
  *
- * The supplemental encoder writes ceil(samples / frame_samples) frames plus one
- * flush frame whose payload completes the encoder's internal lookahead, exactly
- * like the native ffmpeg liblc3 pipeline; decode returns exactly `nb_samples`.
+ * The encoder writes ceil(samples / frame_samples) frames plus one flush frame
+ * whose payload completes its internal lookahead, like the native ffmpeg
+ * liblc3 pipeline; decode returns exactly `nb_samples`.
  */
 
 export interface Lc3ContainerHeader {

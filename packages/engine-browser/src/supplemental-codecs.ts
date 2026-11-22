@@ -1,27 +1,20 @@
 /**
  * Supplemental same-origin WASM codecs for LC3 and LDAC in the browser.
  *
- * The pinned @ffmpeg/core 0.12.10 lists neither codec, and LDAC can never be an
- * FFmpeg codec. These codecs are compiled from the exact same pinned sources as
- * the native desktop tier (pinned liblc3 1.1.3; AOSP libldac 2.00.02 at commit
- * eeee1a3f5f8df1282e3a6d297085885fd886737b; hegdi/libldacdec at commit
- * 7f3bd6cc1586b764b02f2e4f20b16c7ff18758b9) and loaded as same-origin assets
- * next to the pinned ffmpeg core. There is no CDN and no alias, simulation or
- * native fallback: a missing asset refuses the request exactly like a missing
- * native LDAC helper.
+ * The pinned @ffmpeg/core 0.12.10 lists neither codec, and libldacdec is a
+ * third-party reverse-engineered decoder, so both run from pinned sources
+ * (liblc3 1.1.3, AOSP libldac 2.00.02, hegdi/libldacdec) built and served next
+ * to the FFmpeg core. There is no CDN and no alias, simulation or native
+ * fallback: a missing asset refuses the request.
  *
- * Provenance and container behavior mirror packages/engine-native:
- * - LC3 is encoded at an explicit internal 48 kHz / 10 ms configuration into the
- *   FFmpeg `lc3` raw container (no rate header; the encoded rate is the explicit
- *   setting), then every stage is restored to the session rate/channels.
- * - LDAC encodes into the ldac_helper v1 container. The decoder is the
- *   third-party reverse-engineered hegdi/libldacdec implementation; no vendor
- *   validation or bit-exact equivalence with a retail LDAC sink is established.
+ * LC3 uses an explicit internal 48 kHz / 10 ms configuration into the FFmpeg
+ * `lc3` raw container, and every stage is restored to the session rate and
+ * channels. LDAC uses the ldac_helper v1 container; no vendor validation or
+ * bit-exact equivalence with a retail LDAC sink is claimed.
  *
- * Modules are Emscripten -sMODULARIZE builds with EXPORT_NAME createLC3Codec /
- * createLDACCodec, instantiated with a fetched wasmBinary (the test harness
- * serves assets without the application/wasm MIME type, so
- * WebAssembly.instantiateStreaming is deliberately avoided).
+ * Modules are Emscripten -sMODULARIZE builds exported as createLC3Codec /
+ * createLDACCodec and instantiated from fetched bytes, because test harnesses
+ * serve assets without the application/wasm MIME type.
  */
 
 export const LC3_SUPPLEMENTAL_PROVENANCE =
@@ -59,41 +52,13 @@ export interface SupplementalProgress {
 }
 
 /**
- * Exact C glue ABI the engine relies on (documented in the supplemental WASM
- * build README; one adaptor per module keeps adjustments local). All
- * functions return 0 on success and -1 on failure unless stated otherwise.
- *
- * LC3 (frame level, mirroring libavcodec/liblc3enc.c math):
- *   int32_t _lc3_encoder_new(int32_t rate_hz, int channels,
- *       int32_t bitrate_bps, int32_t frame_duration_us, int32_t* meta_out4);
- *     -> encoder handle (0 = failure); meta_out4 receives, in order,
- *        block_bytes, frame_samples, delay_samples, effective_bitrate_bps.
- *   int32_t _lc3_encode_block(int32_t handle, int16_t* pcm_block);
- *     -> encodes exactly frame_samples*channels int16 samples (zero-padded for
- *        the final partial block and the closing zero block; the caller owns
- *        the padding).
- *   int32_t _lc3_frame_len(int32_t handle);            // payload bytes
- *   int32_t _lc3_frame_copy(int32_t handle, uint8_t* out); // copies payload
- *   void    _lc3_encoder_free(int32_t handle);
- *   int32_t _lc3_decoder_new(int32_t rate_hz, int channels,
- *       int32_t frame_duration_us, int32_t hr_mode);   // handle or 0
- *   int32_t _lc3_decode_block(int32_t handle, uint8_t* frame, int32_t frame_bytes,
- *       int16_t* out); // writes frame_samples interleaved samples; 0 ok
- *   void    _lc3_decoder_free(int32_t handle);
- *
- * LDAC (the in-memory port of tools/ldac_helper.c; record level):
- *   int32_t _ldac_wasm_encoder_new(int32_t rate, int channels, int32_t bitrate_kbps,
- *       int32_t* meta_out2); // handle; meta: [0]=encoder LSU samples per frame,
- *                            // [1]=actual bitrate as libldac reports (kbps)
- *   int32_t _ldac_wasm_encode_block(int32_t handle, int16_t* pcm_block);
- *     -> one LSU block (meta[0]*channels int16 samples, zero padded when partial).
- *   int32_t _ldac_wasm_frame_len(int32_t handle); // transport frame bytes, or 0
- *   int32_t _ldac_wasm_frame_copy(int32_t handle, uint8_t* out);
- *   void    _ldac_wasm_encoder_free(int32_t handle);
- *   int32_t _ldac_wasm_decoder_new(int32_t rate, int channels); // handle or 0
- *   int32_t _ldac_wasm_decode_block(int32_t handle, uint8_t* frame,
- *       int32_t frame_bytes, int16_t* out); // returns decoded sample frames (128)
- *   void    _ldac_wasm_decoder_free(int32_t handle);
+ * Exact C glue ABI the engine relies on (one adaptor per module keeps
+ * adjustments local). Every function returns 0 on success and -1 on failure
+ * unless stated; a handle of 0 means failure. The LC3 meta record is
+ * [block_bytes, frame_samples, delay_samples, effective_bitrate_bps], the LDAC
+ * one [LSU samples per frame, actual bitrate kbps]. Callers submit exactly
+ * padded blocks (including the final partial and closing zero blocks); decoding
+ * writes interleaved int16 samples.
  *
  * Heap sizes come from module memory growth, so every pointer stays within
  * module.HEAPU8. There is one engine-owned input buffer per session.
@@ -237,21 +202,18 @@ export async function instantiateGlue(
 }
 
 /**
- * Owns supplemental module fetch/instantiation/caching. Capability discovery
- * and preparation both validate configured modules. Failed diagnostics are
- * retained for capability reports; subsequent loads retry failed or cancelled
- * attempts.
+ * Owns supplemental module fetch, instantiation and caching. Capability
+ * discovery and preparation both validate configured modules; failed
+ * diagnostics are retained for capability reports and later loads retry.
  *
- * Cancellation ownership: the in-flight load is owned by the CALLER that
- * STARTED it, combined with the engine teardown signal. Its abort signal (and
- * teardown) aborts the shared fetch; a joined caller that aborts only stops
- * waiting and never kills the initiator's load. Teardown (dispose) aborts
- * every in-flight load immediately. Both of the sibling fetches (glue and
- * wasm) share one AbortController, so a partial failure or abort cancels the
- * other in-flight fetch too and nothing is left dangling.
+ * Cancellation ownership: the caller that STARTED an in-flight load owns it
+ * together with the engine teardown signal. A joined caller that aborts only
+ * stops waiting and never kills the initiator's load; teardown aborts every
+ * in-flight load immediately. Both sibling fetches (glue and wasm) share one
+ * AbortController, so a partial failure leaves nothing fetching.
  *
- * When `lifecycleSignal` is provided (the engine's lifecycle signal), passing
- * it as a caller signal is redundant but harmless: teardown aborts regardless.
+ * Passing `lifecycleSignal` as a caller signal is redundant but harmless:
+ * teardown aborts regardless.
  */
 export class SupplementalCodecRuntime {
   private readonly urls: SupplementalAssetUrls;

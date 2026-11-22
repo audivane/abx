@@ -6,14 +6,11 @@
  *   x(i)                = "A" if low bit of SHA256(secret || uint64BE(i)) is 0
  *                         "B" otherwise, with i starting at 1.
  *
- * Only WebCrypto (`globalThis.crypto.subtle` and `getRandomValues`) is used;
- * there is deliberately no production import of Node's `crypto` module.
- *
- * Verification requires the caller to supply the published commitment *and*
- * the revealed sequence, and both must match.
- *
- * All external byte inputs are copied synchronously before the first `await`,
- * so a caller mutating its buffer afterwards cannot change the digest input.
+ * Only WebCrypto is used; there is deliberately no production import of Node's
+ * `crypto`. Verification needs both the published commitment and the revealed
+ * sequence. External byte inputs are copied synchronously before the first
+ * `await`, so a caller mutating its buffer afterwards cannot change the digest
+ * input.
  */
 import type { DisplayAnswer } from "@codec-abx/contracts";
 

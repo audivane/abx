@@ -56,7 +56,7 @@ test("canonical delivery and retained bounds are derived from max frames/layout"
     2 * AUDIO_MAX_WAV_BYTES + 2 * AUDIO_MAX_CANARY_WAV_BYTES,
   );
   assert.ok(Number.isSafeInteger(AUDIO_MAX_RETAINED_BYTES));
-  // The former 1 GiB envelope cannot cover two 1800.5 s 96 kHz stereo sides.
+  // Two 1800.5 s 96 kHz stereo sides plus their canaries exceed 1 GiB.
   assert.ok(AUDIO_MAX_RETAINED_BYTES > 1024 * MIB);
   assert.ok(AUDIO_MAX_RETAINED_BYTES > 2 * 691_392_000);
 });

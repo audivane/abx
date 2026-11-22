@@ -6,7 +6,7 @@ import { ensureArtifacts, root, lockPath } from './verification/build.mjs';
 import { run, cancellation } from './verification/process.mjs';
 
 // Hold the shared-output lock until both owned servers and all workers stop.
-// This intentionally queues other build/browser/desktop sessions while serving
+// This intentionally queues other build/browser sessions while serving
 // checkout assets; it never attaches to a user's development server.
 await withLock(lockPath, async () => {
   await ensureArtifacts('client');

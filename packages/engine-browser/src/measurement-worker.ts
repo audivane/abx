@@ -29,15 +29,13 @@ import { parsePcm16Wav } from "./wav.js";
 /**
  * Dedicated numerical worker.
  *
- * It owns the heavy synchronous work for both supported browser policies:
- * strict WAV parsing of the exact delivered bytes, PCM16 decoding, FFT
- * alignment, K-weighted loudness, null depth and, for
- * `aligned-gain-matched-v1`, the shared correction/serialization/remeasurement
- * policy. It also computes the frozen identical-pipeline null decision on the
- * final corrected pair and, only when explicitly requested, canary material
- * from that final Side A. The UI thread only exchanges transferred copies of
- * serialized WAV files and data-only results. No Node or network access
- * is available or used here.
+ * It owns the heavy synchronous work for both browser policies: strict WAV
+ * parsing of the exact delivered bytes, PCM16 decoding, FFT alignment,
+ * K-weighted loudness, null depth and, for `aligned-gain-matched-v1`, the
+ * shared correction/serialization/remeasurement policy, plus the frozen
+ * identical-pipeline null decision and optional canary material. Only
+ * transferred WAV copies and data-only results cross the boundary; there is no
+ * Node or network access.
  */
 
 interface WorkerScope {

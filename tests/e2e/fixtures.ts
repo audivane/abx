@@ -258,8 +258,9 @@ export async function prepare(page: Page): Promise<number> {
   const started = Date.now();
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
   await expect(page.locator(".evidence-audio")).toBeVisible({ timeout: 150_000 });
-  await page.locator(".evidence-audio > details").filter({ has: page.getByText("Files and diagnostics", { exact: true }) }).evaluate(element => {
-    (element as HTMLDetailsElement).open = true;
+  // Present only when canary material was prepared.
+  await page.locator(".evidence-audio > details").filter({ has: page.getByText("Files and diagnostics", { exact: true }) }).evaluateAll(elements => {
+    for (const element of elements) (element as HTMLDetailsElement).open = true;
   });
   return Date.now() - started;
 }

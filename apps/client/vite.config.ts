@@ -7,7 +7,7 @@ const workspaceRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 // Set only by tools/website-demo/build.mjs on its own Vite child process,
 // which compiles this same source tree for static hosting under a subpath.
-// Without these variables the default client/desktop build is unchanged:
+// Without these variables the default local client build is unchanged:
 // base "/" and outDir "dist".
 const demoBase = process.env.CODEC_ABX_WEBSITE_DEMO_BASE;
 const demoOutDir = process.env.CODEC_ABX_WEBSITE_DEMO_OUT_DIR;

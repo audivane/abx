@@ -1,12 +1,11 @@
 /**
  * Versioned, typed RPC protocol between the renderer client and the dedicated
- * experiment Worker. Only the explicit operation allowlist below is dispatched;
- * no service property name is ever reflected from a message.
+ * experiment Worker. Only the explicit operation allowlist is dispatched; no
+ * service property name is reflected from a message.
  *
- * Requests and responses are strict allowlists. Public snapshots/trials/receipts
- * may never carry pending or future assignments, display mappings or secrets.
- * Export audit rows and the terminal reveal are guarded separately according to
- * the frozen service contract.
+ * Requests and responses are strict allowlists. Public snapshots, trials and
+ * receipts never carry pending or future assignments, display mappings or
+ * secrets; export audit rows and the terminal reveal are guarded separately.
  */
 import { freezeRequest } from "@codec-abx/contracts";
 import type {
@@ -242,7 +241,7 @@ function guardPreparedIdentity(value: unknown): NonNullable<ExperimentSnapshot["
     request: guardPreparationRequest(raw.request),
     preparationLocation: oneOf(
       raw.preparationLocation,
-      ["desktop-native", "browser-local", "optional-server"] as const,
+      ["browser-local", "optional-server"] as const,
       "snapshot.prepared.preparationLocation",
     ),
   };

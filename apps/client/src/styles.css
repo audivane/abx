@@ -1109,6 +1109,103 @@ details > summary::marker {
   margin: 0;
 }
 
+/* Shared test links */
+
+.share-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.share-banner-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.share-banner-block {
+  color: var(--bad-text);
+  font-weight: 500;
+}
+
+.share-setup {
+  align-self: center;
+}
+
+.share-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.share-summary {
+  font-weight: 500;
+}
+
+.share-link {
+  display: flex;
+  gap: 8px;
+}
+
+.share-link input {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.share-link button {
+  flex: none;
+}
+
+.share-status {
+  min-height: 1.4em;
+  margin-top: -8px;
+  color: var(--ok-text);
+  font-size: 13px;
+}
+
+.share-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.share-option input {
+  margin-top: 3px;
+}
+
+.share-option small {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.share-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.share-qr img {
+  width: 240px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .share-banner,
+  .share-link {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 .setup-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;

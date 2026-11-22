@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Dedicated serial lane for real OS-level browser/Electron output capture.
+ * Dedicated serial lane for real OS-level browser output capture.
  *
  * It holds the shared output lock for build/package reuse and server ownership,
  * launches a project-local user-mode PulseAudio server, serves the built client
@@ -8,7 +8,7 @@
  * dependencies fail this explicit lane; it is never part of the normal suites.
  */
 import path from 'node:path';
-import { promises as fs, existsSync } from 'node:fs';
+import { promises as fs } from 'node:fs';
 import { preview } from 'vite';
 import { createSession, loopbackURL } from './verification/session.mjs';
 import { ensureArtifacts, root, lockPath } from './verification/build.mjs';
@@ -50,7 +50,7 @@ await withLock(lockPath, async () => {
   let primaryError = null;
   let cleanup = null;
   try {
-    await ensureArtifacts('desktop');
+    await ensureArtifacts('client');
     pulse = await startPrivatePulse({ reportDirectory: report });
     server = await preview({
       configFile: path.join(root, 'apps/client/vite.config.ts'),
@@ -66,10 +66,6 @@ await withLock(lockPath, async () => {
       CODEC_ABX_PULSE_SINK_B: pulse.sinkB,
       CODEC_ABX_PREVIEW_URL: loopbackURL(server.httpServer),
     };
-    const desktopLibraries = path.join(root, 'build/desktop-host-libs/root/usr/lib/x86_64-linux-gnu');
-    if (existsSync(desktopLibraries)) {
-      environment.LD_LIBRARY_PATH = [desktopLibraries, environment.LD_LIBRARY_PATH].filter(Boolean).join(':');
-    }
     const playwrightArgs = [
       path.join(root, 'node_modules/@playwright/test/cli.js'),
       'test',
@@ -80,7 +76,7 @@ await withLock(lockPath, async () => {
     const commandArgs = process.env.DISPLAY ? playwrightArgs : ['-a', process.execPath, ...playwrightArgs];
     console.log(`[audio-output] private PulseAudio ${pulse.pulseaudioVersion} on ${pulse.socket}`);
     console.log(`[audio-output] owned preview ${environment.CODEC_ABX_PREVIEW_URL}; reports: ${report}`);
-    console.log(`[audio-output] serial scope: ${args.length ? args.join(' ') : 'browser + Electron capture'}`);
+    console.log(`[audio-output] serial scope: ${args.length ? args.join(' ') : 'browser capture'}`);
     await run(command, commandArgs, { cwd: root, env: environment });
   } catch (error) {
     primaryError = error;

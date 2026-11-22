@@ -19,8 +19,8 @@ if (production) {
 const explicitFiles = parsed.files.length > 0;
 const files = production
   ? [...productionUnitFiles]
-  : explicitFiles ? parsed.files : [...globSync(['packages/*/test/*.test.ts', 'apps/client/test/*.test.ts', 'apps/desktop/test/*.test.ts', 'tools/test/*.test.mjs'], { cwd: root })].sort();
-console.log(`[verification] unit scope: ${production ? 'PRODUCTION TypeScript/native/desktop/tooling tests (explicit fail-closed selection)' : explicitFiles ? args.join(' ') : 'ALL TypeScript, desktop unit, tooling and Node tests'}`);
+  : explicitFiles ? parsed.files : [...globSync(['packages/*/test/*.test.ts', 'apps/client/test/*.test.ts', 'tools/test/*.test.mjs'], { cwd: root })].sort();
+console.log(`[verification] unit scope: ${production ? 'PRODUCTION TypeScript/tooling tests (explicit fail-closed selection)' : explicitFiles ? args.join(' ') : 'ALL TypeScript, tooling and Node tests'}`);
 const reportDirectory = production ? await createSession(root, 'production-unit') : null;
 const reportPath = reportDirectory ? path.join(reportDirectory, 'unit.xml') : null;
 const options = reportPath

@@ -284,7 +284,6 @@ function configuredView(state: Harness["controller"]["state"], harnessed: Harnes
   const html = renderToStaticMarkup(createElement(ListeningSection, {
     artifact: harnessed.artifact,
     listening: { controller: harnessed.controller, state },
-    runtimeKind: "browser",
     active: true,
     tally: null,
     onGoToSetup: () => {},

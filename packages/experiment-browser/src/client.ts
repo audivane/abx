@@ -40,9 +40,8 @@ import {
 import { MAX_RETAINED_BYTES, readCanonicalWav } from "./wav.js";
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
-// Scale the long-track IPC waits with the accepted duration instead of keeping
-// the former ten-minute/256 MiB assumptions. Binding copies and verifies two
-// bounded deliveries; reading returns one exact copy.
+// Long-track IPC waits scale with the accepted duration. Binding copies and
+// verifies two bounded deliveries; reading returns one exact copy.
 const DEFAULT_BIND_TIMEOUT_MS = AUDIO_MAX_DURATION_SECONDS * 1_000;
 const DEFAULT_READ_TIMEOUT_MS = AUDIO_MAX_DURATION_SECONDS * 500;
 const DEFAULT_DISPOSE_TIMEOUT_MS = 1_000;

@@ -1,8 +1,8 @@
 # Scientific policy
 
 Audivane prepares two codec chains from one decoded source, then runs a
-fixed-trial blind ABX comparison. Audio stays local. The desktop runs native
-codecs in a private worker; the browser uses local WASM codecs.
+fixed-trial blind ABX comparison. Audio stays local: the browser uses local
+WASM codecs in dedicated workers.
 
 ## Preparation and delivery
 
@@ -20,8 +20,8 @@ codecs in a private worker; the browser uses local WASM codecs.
   as a complete source. See [audio limits](audio-import.md).
 
 Core implementation lives in `packages/measurements`, `packages/preparation-policy`,
-`packages/experiment` and `packages/playback`. Codec adapters live in
-`packages/engine-browser` and `packages/engine-native`.
+`packages/experiment` and `packages/playback`. The codec adapter lives in
+`packages/engine-browser`.
 
 ## Listening and scoring
 
@@ -56,6 +56,5 @@ headphones, device wiring, drivers and OS/Bluetooth processing need separate
 listening checks. Numerical validity does not certify audibility, codec
 conformance, tamper-proof operation or exclusive/bit-perfect output.
 
-See [verification](verification-workflow.md) and [installed acceptance](distribution-acceptance.md)
-for the required checks. Build success and historical tests do not establish
-acceptance of a newly rebuilt artifact.
+See [checks](development.md#checks) for the required commands. Build success
+and historical tests do not establish acceptance of a newly rebuilt artifact.

@@ -2,11 +2,10 @@
  * Test-only browser harness for shared output-device controls.
  *
  * Bundled by Vite into a temporary module and served by a Playwright route. It
- * never ships in the app, creates no test route/global and does no network I/O.
- * The live AudioContext path runs after a real button click; no autoplay or
- * media-permission flags are used. Chromium may legitimately expose only the
- * default output and no chooser in headless Linux; those facts are recorded
- * rather than skipped or fabricated.
+ * never ships in the app, creates no test route or global and does no network
+ * I/O. The live AudioContext path runs after a real button click, with no
+ * autoplay or media-permission flags. Headless Chromium may expose only the
+ * default output and no chooser; those facts are recorded, not fabricated.
  */
 import type { PlaybackLabel, PublicTrial } from "@codec-abx/contracts";
 import { BrowserTrialPlayer } from "@codec-abx/playback";

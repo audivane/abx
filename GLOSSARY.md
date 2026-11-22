@@ -35,9 +35,9 @@ The two delivered tracks after configured processing, alignment, level matching,
 and validation, ready for audition in an ABX run.
 
 **Processing engine**:
-The environment that prepares a pair: desktop native, browser local, or optional
-server processing. Engines are alternative locations for the work.
-_Avoid_: Tier, when it implies passing through all three engines in sequence.
+The browser-local WASM engine that prepares a pair. There is no server or
+desktop engine.
+_Avoid_: Tier, when it implies passing through several engines in sequence.
 
 **Engine capability**:
 A tested operation or input constraint supported by a particular processing

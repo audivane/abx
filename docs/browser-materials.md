@@ -1,17 +1,14 @@
 # Browser WASM release materials
 
 Status: **materials complete for the matching source/build/license gate**. This
-page records the exact browser codec bytes served by the demo, the upstream
+page records the exact browser codec bytes served by the app, the upstream
 sources they are inferred to come from, the verified source archive set, and
-the evidence bounds that remain. Publishing is authorized by the project owner;
-this page is release engineering evidence, not a claim that the demo is audible
-or codec-conformant.
+the evidence bounds that remain.
 
-The desktop material set does not close this gate. The browser serves
-`@ffmpeg/core` 0.12.10 (GPL-2.0-or-later) plus locally built LC3/LDAC WASM, so
-the web release needs its own corresponding-source/build payload. The parent
-integration will serve this material tree under `/sources/browser/` and link
-`NOTICES.md` from the demo.
+The browser serves `@ffmpeg/core` 0.12.10 (GPL-2.0-or-later) plus locally built
+LC3/LDAC WASM, so the web release needs its own corresponding-source/build
+payload. The site bundle serves this material tree and links `NOTICES.md` from
+the app.
 
 ## Exact bytes in the browser tier
 
@@ -172,8 +169,8 @@ not a claim that the permissively licensed LC3/LDAC source is missing.
   contains `sources/`, `licenses/`, `build/`, `distributed/`, `toolchain/`,
   `provenance/`, `NOTICES.md`, `SOURCE-OFFER.md`, `SERVING.md`, `REPORT.json`
   and `MANIFEST.json`.
-- The parent integration will serve the tree at `/sources/browser/` and link
-  `NOTICES.md` from the demo. `SERVING.md` records the required layout.
+- The site bundle serves the tree beside the app and links `NOTICES.md` from
+  the source offer. `SERVING.md` records the required layout.
 - `--require-complete` exits 0 and the collector aborts if a required archive is
   missing or does not match its pin.
 
@@ -195,25 +192,11 @@ not a claim that the permissively licensed LC3/LDAC source is missing.
    Binaryen and Node are recorded by version/identity but their full source
    trees are not bundled; they are compilers, not linked work.
 
-## Publication status
+## Publication
 
-No credential access, deployment, branch push, commit or public claim was made
-by this task. The parent owns the demo deployment and the `/sources/browser/`
-serving decision. This page does not claim audio conformance or audibility.
-
-## What is closed
-
-- Exact npm tarball, installed package and served `ffmpeg-core` bytes match.
-- The wrong `v0.12.10` tag was identified and replaced with the inferred
-  `v12.15`/`71aa99d` release source and `bd903bb` build-affecting source.
-- Every dependency used by the core Dockerfile is pinned to an immutable commit
-  with a verified source archive; the GPL/LGPL and permissive license texts are
-  extracted. No required source is missing.
-- The supplemental LC3/LDAC pairs, source refs, toolchain pins and served bytes
-  match, and both modules were rebuilt byte-for-byte under documented
-  conditions.
-- A collector with `--verify`, `--require-complete` and `--bundle` makes the
-  matching-materials gate machine-checkable and produces the deployable archive.
+Deployment and `/sources/` serving are the site owner's decisions. This page
+is release engineering evidence; it does not claim audio conformance or
+audibility.
 
 ## Reproduction checks
 

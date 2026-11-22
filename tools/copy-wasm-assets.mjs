@@ -30,9 +30,9 @@ export async function copyWasmAssets({
   // configures the supplemental URLs, and the engine honestly reports those
   // codecs as unconfigured when the asset cannot be validated. But a missing
   // source is not neutral: each module is one version-paired js/wasm unit, so
-  // a previously copied public asset is stale once its build disappears, and
-  // a partial rebuild would otherwise mix a new glue file with an old module
-  // half (or the reverse). Each codec's public pair is therefore reconciled as
+  // a copied public asset is stale once its build disappears, and a partial
+  // rebuild would otherwise mix a new glue file with an old module half (or
+  // the reverse). Each codec's public pair is therefore reconciled as
   // a unit: the build's last-written SHA-256 manifest binds both source files.
   // Missing files or a missing/mismatched manifest remove both public copies,
   // including after an interrupted install that left both halves present.

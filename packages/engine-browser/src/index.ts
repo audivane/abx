@@ -741,13 +741,11 @@ function artifactDisclosures(
 
 
 /**
- * Browser-local adapter using the real @ffmpeg/ffmpeg dedicated worker and a
- * packaged single-thread WASM core. The UI thread never executes FFmpeg.
- *
- * Delivered PCM is measured in a second, short-lived dedicated worker. The
- * estimates describe unchanged delivered bytes; preparationPolicy remains
- * codec-probe-only because no alignment, gain matching, trim, gate or scoring
- * is applied.
+ * Browser-local adapter over the real @ffmpeg/ffmpeg dedicated worker and a
+ * packaged single-thread WASM core; the UI thread never executes FFmpeg.
+ * Delivered PCM is measured in a second, short-lived worker, and
+ * preparationPolicy stays codec-probe-only because no alignment, gain
+ * matching, trim, gate or scoring is applied.
  */
 export class BrowserPreparationEngine implements PreparationEngine<File> {
   private readonly coreURL: string;
@@ -1722,8 +1720,8 @@ export class BrowserPreparationEngine implements PreparationEngine<File> {
     inputName: string,
     outputName: string,
   ): Promise<SupplementalStageMeta> {
-    // 1) FFmpeg normalizes the preceding PCM to the codec's internal rate and
-    //    encoded channel count, exactly like every ffmpeg-based stage.
+    // FFmpeg normalizes the preceding PCM to the codec's internal rate and
+    // channel count, exactly like every ffmpeg-based stage.
     const encInName = `enc_in_${side}_${String(stageIndex)}_${String(job.id)}.wav`;
     files.add(encInName);
     await this.exec(worker, [
@@ -1741,7 +1739,7 @@ export class BrowserPreparationEngine implements PreparationEngine<File> {
     const totalSampleFrames = encPcm.facts.frames;
     const interleaved = encPcm.samples;
 
-    // 2) Encode with the supplemental WASM codec, chunked and cancellable.
+    // Encode with the supplemental WASM codec, chunked and cancellable.
     const framePayloads: Uint8Array[] = [];
     let containerBytes: Uint8Array;
     let actualFromHeader: number | null = null;
@@ -1854,8 +1852,8 @@ export class BrowserPreparationEngine implements PreparationEngine<File> {
     const encodedSize = containerBytes.byteLength;
     await this.throwIfCancelled(job);
 
-    // 3) Decode with the supplemental codec to internal-rate PCM16, then let
-    //    ffmpeg restore the session rate/layout exactly like other stages.
+    // Decode with the supplemental codec to internal-rate PCM16, then let
+    // ffmpeg restore the session rate and layout like every other stage.
     report({ phase: "encoding", message: `${label}: decoding with explicit ${plan.decoder}; ` +
       `restoring ${String(targetRate)} Hz/${String(channels)} channels` });
     if (job.aborted) throw job.cancelError ?? abortError();
@@ -1985,8 +1983,8 @@ export class BrowserPreparationEngine implements PreparationEngine<File> {
       ];
     }
 
-    // 4) Hand the decoded internal-rate PCM16 back to ffmpeg as a plain WAV so
-    //    the shared restore invocation stays identical to every other stage.
+    // Hand the decoded PCM16 back to ffmpeg as a plain WAV so the shared
+    // restore invocation stays identical to every other stage.
     const decInName = `dec_in_${side}_${String(stageIndex)}_${String(job.id)}.wav`;
     files.add(decInName);
     await raceWithAbort(

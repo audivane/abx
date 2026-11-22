@@ -1,23 +1,19 @@
 /**
  * Deterministic unit coverage for the supplemental LC3/LDAC asset loader and
- * its engine integration. These tests never depend on the optional built WASM
- * artifacts, so they run in every environment and document the exact loading
- * contract:
+ * its engine integration. These tests never need the optional built WASM
+ * artifacts, so they run everywhere and pin the loading contract:
  *
- * - a configured URL is not availability: the runtime must actually fetch,
- *   validate the WebAssembly magic and the glue entry points before a codec
- *   is "loaded";
+ * - a configured URL is not availability: the runtime must fetch the asset,
+ *   check the WebAssembly magic and the glue entry points before a codec is
+ *   "loaded";
  * - 404/SPA-HTML assets and invalid glue fail deterministically and allow retry;
  * - the caller that starts a load owns its cancellation; a joined caller's
  *   abort only stops waiting; engine teardown aborts every in-flight load;
- * - both sibling fetches (glue JS + wasm) share one AbortController, so a
- *   partial failure/abort leaves nothing fetching in the dark;
- * - every LC3/LDAC encoder/decoder session creation propagates the caller's
- *   abort signal into the module load;
- * - engine prepare() refuses a missing/invalid configured asset with
- *   supplemental-codec-unconfigured BEFORE any source audio is read, even
- *   with no prior capabilities() call, and an aborted initial fetch rejects
- *   with AbortError while stopping the in-flight fetch.
+ * - both sibling fetches share one AbortController, so a partial failure leaves
+ *   nothing fetching in the dark;
+ * - session creation propagates the caller's abort signal into the module load;
+ * - prepare() refuses a missing/invalid asset with supplemental-codec-unconfigured
+ *   before any source audio is read, even without a prior capabilities() call.
  */
 import assert from "node:assert/strict";
 import test from "node:test";

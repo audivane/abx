@@ -4,7 +4,10 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { buildDemo, buildWebsiteDemoBundle, gitProvenance, releaseDocument, root, websiteDemoBase, withNoindex } from '../website-demo/build.mjs';
+import {
+  assertSiteMetadata, buildDemo, buildWebsiteDemoBundle, gitProvenance, releaseDocument, root,
+  siteDescription, siteTitle, websiteBase, websiteUrl, withSiteMetadata,
+} from '../website-demo/build.mjs';
 
 async function gitRepository(t) {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'codec-demo-git-'));
@@ -19,14 +22,22 @@ async function gitRepository(t) {
   return { directory, git };
 }
 
-test('noindex lands after <head> only in the demo HTML, is idempotent and refuses a conflicting robots policy', () => {
-  const html = '<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8">\n    <title>Demo</title>\n  </head>\n  <body></body>\n</html>';
-  const once = withNoindex(html);
-  assert.match(once, /<head>\s*<meta name="robots" content="noindex">/);
-  assert.equal(withNoindex(once), once);
-  assert.match(withNoindex(once.replace('<head>', '<HEAD>')), /<HEAD>\s*<meta name="robots"/);
-  assert.throws(() => withNoindex(once.replace('content="noindex"', 'content="all"')), /without noindex/);
-  assert.throws(() => withNoindex('<html><body></body></html>'), /no <head>/);
+test('site metadata replaces the page title and description, adds canonical and social tags, and is idempotent', () => {
+  const html = '<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8">\n    <meta name="description" content="old">\n    <title>Demo</title>\n  </head>\n  <body></body>\n</html>';
+  const once = withSiteMetadata(html);
+  assert.match(once, new RegExp(`<title>${siteTitle}</title>`));
+  assert.match(once, new RegExp(`<meta name="description" content="${siteDescription}">`));
+  assert.match(once, new RegExp(`<link rel="canonical" href="${websiteUrl}">`));
+  for (const property of ['og:type', 'og:site_name', 'og:title', 'og:description', 'og:url'])
+    assert.match(once, new RegExp(`<meta property="${property}" content="[^"]+"`));
+  for (const name of ['twitter:card', 'twitter:title', 'twitter:description'])
+    assert.match(once, new RegExp(`<meta name="${name}" content="[^"]+"`));
+  assert.doesNotMatch(once, /name="robots"/i);
+  assert.equal(withSiteMetadata(once), once);
+  assert.doesNotThrow(() => assertSiteMetadata(once));
+  assert.throws(() => withSiteMetadata('<html><body></body></html>'), /no <head>/);
+  assert.throws(() => assertSiteMetadata(once.replace(/<link rel="canonical"[^>]*>/, '')), /canonical URL/);
+  assert.throws(() => assertSiteMetadata(`${once}<meta name="robots" content="noindex">`), /must stay indexable/);
 });
 
 test('git provenance separates HEAD, worktree dirt and compiled app-source dirt; outside git it is unknown', async t => {
@@ -65,13 +76,13 @@ test('git provenance separates HEAD, worktree dirt and compiled app-source dirt;
 
 test('release.json shape pins the schema, app version, commit and dirty flags consumers rely on', () => {
   const commit = 'a'.repeat(40);
-  const document = releaseDocument({ version: '0.1.0', base: websiteDemoBase, commit, dirty: false, appSourcesDirty: true });
-  assert.deepEqual(document, { schema: 'codec-abx-website-release-v1', version: '0.1.0', commit, dirty: false, appSourcesDirty: true, base: '/abx/demo/' });
+  const document = releaseDocument({ version: '0.1.0', base: websiteBase, commit, dirty: false, appSourcesDirty: true });
+  assert.deepEqual(document, { schema: 'codec-abx-website-release-v1', version: '0.1.0', commit, dirty: false, appSourcesDirty: true, base: '/abx/' });
   assert.deepEqual(JSON.parse(JSON.stringify(document)), document);
 });
 
-test('a demo output location overlapping the shared client or desktop artifacts is refused before building', async () => {
-  for (const outDir of [path.join(root, 'apps/client/dist'), path.join(root, 'apps/client/dist/demo'), path.join(root, 'apps/desktop/dist/nested')])
+test('a website output location overlapping the shared client artifact is refused before building', async () => {
+  for (const outDir of [path.join(root, 'apps/client/dist'), path.join(root, 'apps/client/dist/demo')])
     await assert.rejects(buildDemo({ outDir }), /must not overlap the shared artifact/);
   await assert.rejects(buildDemo({ outDir: path.dirname(root) }), /must not overlap the shared artifact/);
 });
@@ -131,7 +142,7 @@ test('bundle packaging refuses when an already-dirty app source changes mid-buil
   );
 });
 
-test('the default client/desktop build keeps base "/" and outDir "dist", and noindex stays out of the source app', async () => {
+test('the default client build keeps base "/" and outDir "dist", and site metadata stays out of the source app', async () => {
   const config = await fs.readFile(path.join(root, 'apps/client/vite.config.ts'), 'utf8');
   assert.match(config, /base: demoBase \?\? "\/"/);
   assert.match(config, /outDir: demoOutDir \?\? "dist"/);

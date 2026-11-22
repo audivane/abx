@@ -1,22 +1,18 @@
 /**
- * LC3 supplemental WASM lifetime regression (create/dispose churn).
+ * LC3 supplemental WASM lifetime test (create/dispose churn).
  *
  * lc3_wasm.c allocates one contiguous `calloc(channels, size)` block that
- * carries every per-channel codec state. If lc3_encoder_free/lc3_decoder_free
- * drop that base pointer, every dispose leaks it. This test drives real
- * create/encode/dispose and create/decode/dispose churn for BOTH encoder and
- * decoder in mono and stereo and asserts that WASM linear memory does not grow
- * after warmup. Allocation growth is quantized to 64 KiB WASM pages and is
- * only visible once the leaked allocations exhaust the pre-mapped heap slack,
- * so the churn is sized to make a per-cycle leak cross that boundary many
- * times over (measured leaky rates: ~4.2 KB/cycle encoder, ~7-10 KB/cycle
- * decoder at these parameters; 4096 churn cycles leak tens of MiB, while a
- * bounded, leak-free implementation returns the frontier after every cycle
- * and produces no measurable growth). The assertion therefore observes
- * behavior, not implementation text.
+ * carries every per-channel codec state; a destructor that drops the base
+ * pointer leaks it on every dispose. The test drives real
+ * create/encode/dispose and create/decode/dispose churn for both encoder and
+ * decoder, mono and stereo, and requires WASM linear memory not to grow after
+ * warmup. Growth is quantized to 64 KiB WASM pages and only becomes visible
+ * once leaked allocations exhaust the heap slack, so 4096 cycles are sized to
+ * cross that boundary many times over (measured leak rates are ~4.2 KB/cycle
+ * for the encoder and ~7-10 KB/cycle for the decoder).
  *
- * Skips when the built artifact is missing, mirroring the repository's
- * optional-codec policy: a skip is never evidence of a pass.
+ * Skips when the built artifact is missing, mirroring the optional-codec
+ * policy: a skip is never evidence of a pass.
  */
 import fs from "node:fs";
 import path from "node:path";

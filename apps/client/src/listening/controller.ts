@@ -1,7 +1,6 @@
 import {
   requestsEqual,
   type AnswerReceipt,
-  type DesktopRuntimeFailure,
   type DisplayAnswer,
   type ExperimentClient,
   type ExperimentExport,
@@ -28,14 +27,21 @@ export interface ListeningReaders {
   readCanaryAudio?(artifactId: string, side: "pristine" | "degraded"): Promise<ArrayBuffer>;
 }
 
+/** A fatal runtime notification, independent of the request that reports it. */
+export interface ListeningRuntimeFailure {
+  readonly code: string;
+  readonly message: string;
+  readonly reasons: readonly string[];
+  readonly uncertain: boolean;
+}
+
 /** Runtime-only binding is intentionally absent from the public ExperimentClient. */
 export interface ListeningClient extends ExperimentClient {
   /**
-   * Optional proactive runtime failure notification. The browser Worker client
-   * omits it; the desktop adapter delegates to the main-owned runtime. A fatal
-   * event can arrive while no request is active, including during playback.
+   * Optional proactive runtime failure notification. A fatal event can arrive
+   * while no request is active, including during playback.
    */
-  onFatal?(listener: (failure: DesktopRuntimeFailure) => void): () => void;
+  onFatal?(listener: (failure: ListeningRuntimeFailure) => void): () => void;
   bindPrepared(artifact: PreparedArtifact, readers: ListeningReaders): Promise<ExperimentSnapshot>;
 }
 
@@ -305,8 +311,8 @@ export class ListeningController {
           });
         } catch {
           // A client that cannot register its optional fatal channel still
-          // reports failures through rejected operations. Browser clients omit
-          // the channel entirely, so this is not a fallback engine.
+          // reports failures through rejected operations. This is not a
+          // fallback engine.
         }
       }
       return client;
@@ -327,7 +333,7 @@ export class ListeningController {
    * queued command results are invalidated by the generation bump, and export
    * or answers stay blocked. No replacement run or automatic restart occurs.
    */
-  #handleFatal(failure: DesktopRuntimeFailure): void {
+  #handleFatal(failure: ListeningRuntimeFailure): void {
     if (this.#disposed) return;
     this.#generation += 1;
     this.#restorePlayIntent = false;

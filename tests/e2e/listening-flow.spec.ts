@@ -3,30 +3,6 @@ import { readFile } from "node:fs/promises";
 
 import { expect, test, type Page } from "@playwright/test";
 
-test("an incomplete desktop bridge refuses startup without selecting the browser engine", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.addInitScript(() => {
-    Object.defineProperty(window, "codecAbxDesktop", { value: { version: 2 } });
-    const scope = window as typeof window & { __startupWorkers?: number };
-    scope.__startupWorkers = 0;
-    const OriginalWorker = window.Worker;
-    window.Worker = class extends OriginalWorker {
-      constructor(url: string | URL, options?: WorkerOptions) {
-        scope.__startupWorkers = (scope.__startupWorkers ?? 0) + 1;
-        super(url, options);
-      }
-    };
-  });
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Desktop unavailable" })).toBeVisible();
-  await expect(page.getByRole("alert")).toContainText("no browser fallback was started");
-  await expect(page.locator("#source-file")).toHaveCount(0);
-  expect(await page.evaluate(() => (window as typeof window & { __startupWorkers: number }).__startupWorkers)).toBe(0);
-  expect(await page.evaluate(() => performance.getEntriesByType("resource").filter((entry) => entry.name.includes("ffmpeg-core")).length)).toBe(0);
-  expect(errors).toEqual([]);
-});
-
 import {
   chooseWav,
   collectPageErrors,

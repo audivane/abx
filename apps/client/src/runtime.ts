@@ -1,6 +1,5 @@
 import type {
   CanarySide,
-  DesktopSource,
   EngineCapabilities,
   PreparedArtifact,
   PreparationRequest,
@@ -11,20 +10,14 @@ import { BrowserPreparationEngine } from "@codec-abx/engine-browser";
 import { BrowserExperimentClient } from "@codec-abx/experiment-browser";
 
 import type { ListeningClient } from "./listening/controller.js";
-import { getDesktopBridge } from "./desktop/bridge.js";
-import { DesktopExperimentClient } from "./desktop/experiment.js";
-import { DesktopPreparationEngine } from "./desktop/preparation.js";
 
-export type ClientRuntimeKind = "browser" | "desktop";
+/** ABX runs in the browser only; both engines are local to this tab. */
+export type ClientRuntimeKind = "browser";
 
-/** A File stays in this tab; a desktop source is only a main-owned handle. */
-export type ClientSource =
-  | { readonly kind: "file"; readonly file: File }
-  | { readonly kind: "desktop"; readonly source: DesktopSource };
+/** The selected source stays in this tab as a local File. */
+export type ClientSource = File;
 
 export interface ClientPreparationEngine {
-  readonly kind: ClientRuntimeKind;
-  pickSource(): Promise<ClientSource | null>;
   capabilities(): Promise<EngineCapabilities>;
   prepare(
     source: ClientSource,
@@ -44,16 +37,19 @@ export interface ClientRuntime {
 }
 
 export function sourceName(source: ClientSource | null): string | null {
-  if (source === null) return null;
-  return source.kind === "file" ? source.file.name : source.source.name;
+  return source === null ? null : source.name;
 }
 
 export function sourceSize(source: ClientSource | null): number | null {
-  if (source === null) return null;
-  return source.kind === "file" ? source.file.size : source.source.size;
+  return source === null ? null : source.size;
 }
 
-function createBrowserRuntime(): ClientRuntime {
+/**
+ * Create the local browser runtime once per mounted application. Prepared audio
+ * and the experiment service never leave this tab; no adapter can select a
+ * different processing location.
+ */
+export function createClientRuntime(): ClientRuntime {
   const base = new URL(import.meta.env.BASE_URL, window.location.href);
   const engine = new BrowserPreparationEngine({
     coreURL: new URL("codec-assets/ffmpeg-core.js", base).href,
@@ -64,15 +60,9 @@ function createBrowserRuntime(): ClientRuntime {
   return {
     kind: "browser",
     preparation: {
-      kind: "browser",
-      pickSource: () => Promise.resolve(null),
       capabilities: () => engine.capabilities(),
-      prepare: (source, request, options) => {
-        if (source.kind !== "file") {
-          return Promise.reject(new Error("The browser build accepts a local File source only"));
-        }
-        return engine.prepare(source.file, request, options);
-      },
+      prepare: (source, request, options) =>
+        engine.prepare(source, request, options),
       readAudio: (artifactId, side) => engine.readAudio(artifactId, side),
       ...(engine.readCanaryAudio
         ? {
@@ -85,44 +75,4 @@ function createBrowserRuntime(): ClientRuntime {
     },
     createListeningClient: () => new BrowserExperimentClient(),
   };
-}
-
-function createDesktopRuntime(bridge: NonNullable<ReturnType<typeof getDesktopBridge>>): ClientRuntime {
-  const preparation = new DesktopPreparationEngine(bridge.preparation);
-  const experiment = bridge.experiment;
-  return {
-    kind: "desktop",
-    preparation: {
-      kind: "desktop",
-      pickSource: async () => {
-        const source = await preparation.pickSource();
-        return source === null ? null : { kind: "desktop", source };
-      },
-      capabilities: () => preparation.capabilities(),
-      prepare: (source, request, options) => {
-        if (source.kind !== "desktop") {
-          return Promise.reject(new Error("The desktop build requires an OS-dialog source handle"));
-        }
-        return preparation.prepare(source.source, request, options);
-      },
-      readAudio: (artifactId, side) => preparation.readAudio(artifactId, side),
-      readCanaryAudio: (artifactId, side) => preparation.readCanaryAudio(artifactId, side),
-      release: (artifactId) => preparation.release(artifactId),
-      dispose: () => preparation.dispose(),
-    },
-    // Every new listening run gets a fresh adapter over the same versioned
-    // bridge; disposing one ends main's service and configure creates the next.
-    createListeningClient: () => new DesktopExperimentClient(experiment),
-  };
-}
-
-/**
- * Select the runtime once per mounted application. Plain web keeps the raw
- * browser default and never constructs the desktop adapter; Electron uses the
- * native TypeScript shared-preparation path and never instantiates
- * the browser preparation engine or experiment Worker.
- */
-export function detectClientRuntime(): ClientRuntime {
-  const bridge = getDesktopBridge();
-  return bridge === null ? createBrowserRuntime() : createDesktopRuntime(bridge);
 }

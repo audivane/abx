@@ -64,13 +64,13 @@ function freezeForGate(value: unknown): PreparationRequest {
 
 /**
  * Decide whether a delivered pair that must null is at or below the -60 dB
- * floor. This is a delivered-audio diagnostic, not experiment authority.
- * Malformed requests/levels always throw before an applicability decision.
+ * floor. This is a delivered-audio diagnostic, not experiment authority;
+ * malformed requests or levels throw before any applicability decision.
  *
- * Identical supported A/B selections are applicable. A finite depth <= -60 dB
- * or an exact -inf digital null passes; undefined/unavailable levels fail
- * closed. Different selections are always not-applicable so a shallow residual
- * cannot block a real codec comparison.
+ * Identical supported A/B selections are applicable: a finite depth <= -60 dB
+ * or an exact -inf null passes, and undefined/unavailable levels fail closed.
+ * Different selections are not applicable so a shallow residual cannot block a
+ * real codec comparison.
  */
 export function evaluateNullGate(
   request: PreparationRequest,

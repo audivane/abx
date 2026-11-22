@@ -1,10 +1,8 @@
 /**
- * Reader for the ldac_helper v1 container, in the browser's supplemental LDAC
- * codec. The WASM glue is an in-memory port of tools/ldac_helper.c and produces
- * the identical container; this parser only reads its 48-byte header and
- * verifies the CRC-32 record so provenance and bitrate bases can mirror the
- * native engine (encodedSampleRateSource "ldac-container-header", bitrate
- * basis "ldac-container-bytes-over-header-sample-duration").
+ * Reader and writer for the ldac_helper v1 container of the browser's
+ * supplemental LDAC codec. Provenance and bitrate bases mirror the native
+ * engine (encodedSampleRateSource "ldac-container-header", bitrate basis
+ * "ldac-container-bytes-over-header-sample-duration").
  *
  * All integers are little-endian per the helper's header contract:
  *
@@ -22,18 +20,13 @@
  *   44  4  reserved (0)
  *   48 ... frame records: uint16 length, then one LDAC transport frame.
  *
- * The synchronous `writeLdacContainer`/`parseLdacContainer` stay byte-exact and
- * error-order-identical for the existing callers (native-parity tests, Node
- * consumers). A ten-minute HQ stereo container is ~75 MiB, so its record
- * assembly/copy and the CRC-32 pass would otherwise freeze the main thread for
- * well over a second; `writeLdacContainerAsync`/`parseLdacContainerAsync` run
- * the identical file format, the same validation rules, the same error order
- * and the same CRC-32 bytes, but bound every synchronous slice to a small
- * budget and yield to the event loop between slices, with abort checks and
- * progress callbacks at each boundary. Nothing is validated twice to a
- * different end: both variants share the same record/header/CRC internals, and
- * binding only happens after full assembly, so an abort or failure never
- * exposes a partial container.
+ * A ten-minute HQ stereo container is ~75 MiB, so record assembly, copying and
+ * the CRC-32 pass would otherwise freeze the main thread for over a second.
+ * The async variants produce and accept the same bytes with the same
+ * validation rules and error order, but bound every synchronous slice and
+ * yield between slices with abort checks and progress callbacks. Both variants
+ * share the record/header/CRC internals, so nothing is validated twice to
+ * different ends and an abort never exposes a partial container.
  */
 
 export interface LdacContainerHeader {

@@ -1,10 +1,9 @@
 /**
- * Current local-audio envelope.
+ * Local-audio envelope.
  *
- * The current TypeScript engines accept a larger source than the earlier
- * ten-minute/256 MiB spike. These values are derived from the maximum
- * supported layout rather than chosen as round numbers, so downstream WAV,
- * decoded-PCM and retained-evidence limits cannot silently disagree.
+ * These values are derived from the maximum supported layout rather than
+ * chosen as round numbers, so downstream WAV, decoded-PCM and
+ * retained-evidence limits cannot silently disagree.
  *
  * Capacity basis: 1800.5 s delivery at 96 kHz stereo PCM16 is 691_392_044
  * bytes. A native Float64 side for the 1810 s refusal-sentinel decode is

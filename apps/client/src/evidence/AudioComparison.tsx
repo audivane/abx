@@ -494,28 +494,26 @@ export function AudioComparison({
           </div>
         </dl>
       ) : null}
-      <details
-        className="disclosure files-details"
-        open={detailsState.files}
-        onToggle={(event) => onDetailsChange("files", event.currentTarget.open)}
-      >
-        <summary>Files and diagnostics</summary>
-        <p className="field-note">
-          Download results saves one JSON record with the run, its diagnostics,
-          provenance and hashes.
-        </p>
-        <CanaryMaterialPanel
-          artifact={artifact}
-          actionsDisabled={actionsDisabled}
-          audioBlocked={audioBlocked}
-          detailsState={detailsState}
-          onDetailsChange={onDetailsChange}
-          samples={samples}
-          audioRefs={audioRefs}
-          onLoad={onLoadCanary}
-          onDownload={onDownloadCanary}
-        />
-      </details>
+      {artifact.canary ? (
+        <details
+          className="disclosure files-details"
+          open={detailsState.files}
+          onToggle={(event) => onDetailsChange("files", event.currentTarget.open)}
+        >
+          <summary>Files and diagnostics</summary>
+          <CanaryMaterialPanel
+            artifact={artifact}
+            actionsDisabled={actionsDisabled}
+            audioBlocked={audioBlocked}
+            detailsState={detailsState}
+            onDetailsChange={onDetailsChange}
+            samples={samples}
+            audioRefs={audioRefs}
+            onLoad={onLoadCanary}
+            onDownload={onDownloadCanary}
+          />
+        </details>
+      ) : null}
       {actions}
     </section>
   );

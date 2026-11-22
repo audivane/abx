@@ -1,4 +1,4 @@
-/** Deterministic PCM16 fixtures shared by the browser and Electron capture specs. */
+/** Deterministic PCM16 fixtures shared by the browser capture spec. */
 export type CaptureFixture = "channels" | "markers" | "continuous" | "continuousNext";
 
 export const CHANNELS_ONSET_SECONDS = 0.2;

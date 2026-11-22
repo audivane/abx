@@ -1,12 +1,6 @@
 import assert from "node:assert/strict";
 import { expectedLdacContainerRate } from "./fixtures/ldac-rate-expectation.js";
-import { execFile } from "node:child_process";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 import { crc32 as zlibCrc32 } from "node:zlib";
 import {
   ldacCrc32AfterHeader,
@@ -138,22 +132,13 @@ test("malformed LDAC containers refuse with reason-specific errors", () => {
  * of the requested stereo bitrate number.
  * ---------------------------------------------------------------------- */
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(here, "..", "..", "..");
-const ldacHelper = path.join(repoRoot, "third_party", "ldac", "bin", "ldac_helper");
-const helperPresent = fs.existsSync(ldacHelper);
-const helperSkip = helperPresent
-  ? null
-  : "requires the vendored third_party/ldac/bin/ldac_helper build";
-const execLdac = promisify(execFile);
-
 /** The 0.6 s canonical supplemental e2e source, 28800 sample frames. */
 const E2E_SAMPLE_COUNT = 28_800;
 
 test("the LDAC container rate model reproduces the documented helper rates and sizes", () => {
-  // Expected container bytes and measured kbps for the shapes the tiers
-  // encode (verified against real ldac_helper/WASM container sizes below and
-  // by the supplemental parity tests):
+  // Expected container bytes and measured kbps for the shapes the browser
+  // engine encodes, checked against real WASM container sizes by the
+  // supplemental browser e2e:
   const expectations: ReadonlyArray<[
     Parameters<typeof expectedLdacContainerRate>[0],
     Parameters<typeof expectedLdacContainerRate>[1],
@@ -183,10 +168,9 @@ test("the LDAC container rate model reproduces the documented helper rates and s
 });
 
 test("the documented mono LDAC rate stays far outside the requested-number gate", () => {
-  // Regression guard for the supplemental e2e fix: the previously requested
-  // tolerance (max(24, 15% of requested)) rejects the true half-stereo mono
-  // rate plus container overhead, so the gate must never compare the LDAC
-  // measured basis against the requested stereo number again.
+  // The requested-number tolerance max(24, 15% of requested) rejects the true
+  // half-stereo mono rate plus container overhead, so the gate compares the
+  // LDAC measured basis, never the requested stereo number.
   for (const [requested, tolerance] of [[660, 99], [330, 49.5]] as const) {
     const expected = expectedLdacContainerRate(48_000, 1, requested, E2E_SAMPLE_COUNT);
     assert.ok(Math.abs(expected.measuredKbps - requested) > tolerance,
@@ -196,43 +180,5 @@ test("the documented mono LDAC rate stays far outside the requested-number gate"
     // (0.1 kbps) the engine applies: 338.1 / 172.4 from the last failing run.
     assert.equal(Math.round(expected.measuredKbps * 10) / 10,
       requested === 660 ? 338.1 : 172.4);
-  }
-});
-
-test("the LDAC container rate model matches native ldac_helper container bytes", { skip: helperSkip ?? undefined }, async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ldac-rate-model-"));
-  try {
-    for (const [rate, channels, requested] of [
-      [48_000, 1, 660], [48_000, 1, 330], [48_000, 2, 990],
-      [44_100, 2, 660],
-    ] as const) {
-      const sampleCount = Math.round(0.6 * rate);
-      const pcm = new Int16Array(sampleCount * channels);
-      for (let frame = 0; frame < sampleCount; frame += 1) {
-        for (let channel = 0; channel < channels; channel += 1) {
-          pcm[frame * channels + channel] = Math.round(
-            20_000 * Math.sin(2 * Math.PI * (channel === 0 ? 440 : 622) * frame / rate));
-        }
-      }
-      const pcmIn = path.join(dir, `in-${String(rate)}-${String(requested)}.pcm`);
-      fs.writeFileSync(pcmIn, new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength));
-      const out = path.join(dir, `out-${String(rate)}-${String(channels)}-${String(requested)}.ldac`);
-      await execLdac(ldacHelper, [
-        "encode", "--rate", String(rate), "--channels", String(channels),
-        "--bitrate", String(requested), "--in", pcmIn, "--out", out,
-      ]);
-      const nativeBytes = fs.readFileSync(out);
-      const header = parseLdacContainer(new Uint8Array(nativeBytes));
-      const expected = expectedLdacContainerRate(rate, channels, requested, header.sampleCount);
-      assert.equal(nativeBytes.byteLength, expected.containerBytes,
-        `${String(rate)} Hz ${String(channels)} ch ${String(requested)} kbps: native container size differs from the model`);
-      const reported = rate === 44_100
-        ? { 330: 303, 660: 606, 990: 909 }[requested]
-        : channels === 1 ? requested / 2 : requested;
-      assert.equal(header.reportedBitrateKbps, reported,
-        `${String(rate)} Hz ${String(channels)} ch ${String(requested)} kbps reported bitrate`);
-    }
-  } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
   }
 });

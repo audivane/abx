@@ -5,8 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 /**
- * P1 CI contract for the supplemental LC3/LDAC browser tier (see
- * docs/typescript-supplemental-codec-module.md): the mandatory, unfiltered
+ * P1 CI contract for the supplemental LC3/LDAC browser tier: the mandatory, unfiltered
  * browser lane (browser-codecs) now asserts an eleven-codec build served from
  * the gitignored third_party/wasm/bin artifacts. This guards that CI
  * provisions the exact pinned builds BEFORE the mandatory browser tests, that
@@ -38,11 +37,11 @@ test('browser-codecs provisions the pinned supplemental WASM build before test:b
   const build = section.indexOf('run: tools/build_codec_wasm.sh');
   assert.notEqual(build, -1, 'browser-codecs must build the pinned supplemental WASM codecs');
   // Provisioning must precede every mandatory lane that depends on the
-  // artifacts: the package tests inside check:ts and the browser regression
-  // suite that serves them.
+  // artifacts: the site bundle and the browser regression suite that serves
+  // them.
   assert.ok(
-    build < section.indexOf('npm run check:ts'),
-    'supplemental builds must precede check:ts, whose package tests may run on the artifacts');
+    build < section.indexOf('npm run build:website-demo'),
+    'supplemental builds must precede the site bundle');
   assert.ok(
     build < section.indexOf('npm run test:browser'),
     'supplemental builds must precede the mandatory test:browser run');
@@ -73,17 +72,16 @@ test('browser-codecs verifies a complete and real supplemental asset set before 
 test('the supplemental cache key covers everything the build script actually pins', () => {
   const section = job('browser-codecs');
   assert.match(section, /supplemental-wasm-v1-/, 'supplemental WASM intermediates must be cached');
-  assert.match(section, /hashFiles\('tools\/build_codec_wasm\.sh', 'tools\/lc3_wasm\.c', 'tools\/ldac_wasm\.c', 'tools\/build_ffmpeg\.sh', 'tools\/build_ldac_helper\.sh'\)/);
+  assert.match(section, /hashFiles\('tools\/build_codec_wasm\.sh', 'tools\/lc3_wasm\.c', 'tools\/ldac_wasm\.c'\)/);
 
-  // The glue sources and the pinned-source scripts are real build inputs: the
-  // script reads the LC3 checksum from build_ffmpeg.sh and the libldac/
-  // libldacdec commits from build_ldac_helper.sh, so key changes must track
-  // them, not just the wasm-specific files.
-  assert.match(buildScript, /sed -n .*\^LC3_SHA.*tools\/build_ffmpeg\.sh/);
-  assert.match(buildScript, /LIBLDAC_COMMIT=.*tools\/build_ldac_helper\.sh/);
-  assert.match(buildScript, /LIBLDACDEC_COMMIT=.*tools\/build_ldac_helper\.sh/);
+  // The glue sources and the pinned-source constants are real build inputs.
+  // The browser build no longer reads the archived native build scripts.
+  assert.match(buildScript, /LIBLC3_SHA256="[0-9a-f]{64}"/);
+  assert.match(buildScript, /LIBLDAC_COMMIT="[0-9a-f]{40}"/);
+  assert.match(buildScript, /LIBLDACDEC_COMMIT="[0-9a-f]{40}"/);
   assert.match(buildScript, /tools\/lc3_wasm\.c/);
   assert.match(buildScript, /tools\/ldac_wasm\.c/);
+  assert.doesNotMatch(buildScript, /build_ffmpeg\.sh|build_ldac_helper\.sh/);
 });
 
 test('emitted artifacts reach the served codec-assets through the normal launcher flow', () => {
@@ -101,10 +99,10 @@ test('emitted artifacts reach the served codec-assets through the normal launche
   assert.match(buildGraph, /copyWasmAssets\(\)/);
 });
 
-test('production-typescript runs the real LDAC allocation-failure harness before expensive builds', () => {
-  const section = job('production-typescript');
+test('checks runs the real LDAC allocation-failure harness before expensive builds', () => {
+  const section = job('checks');
   const harness = section.indexOf('Check LDAC WASM allocation failure cleanup');
-  assert.ok(harness >= 0 && harness < section.indexOf('Build FFmpeg with LC3 and the LDAC helper'));
+  assert.ok(harness >= 0 && harness < section.indexOf('npm run test:unit'));
   assert.match(section, /lifecycle_test\.c tools\/ldac_wasm\.c/);
   assert.match(section, /--wrap=malloc,--wrap=calloc,--wrap=free/);
   assert.match(section, /^\s+"\$\{RUNNER_TEMP\}\/ldac-wasm-lifecycle"\s*$/m);

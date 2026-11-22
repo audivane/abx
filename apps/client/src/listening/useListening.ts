@@ -51,10 +51,9 @@ export function attachOutputDiscovery(
 }
 
 /**
- * One controller per mounted app. The runtime supplies the experiment client
- * (browser Worker or main-owned desktop service); construction stays lazy until
- * an explicit listening preparation command. Playback is the shared Web Audio
- * player in both runtimes.
+ * One controller per mounted app. The runtime supplies the browser experiment
+ * client; construction stays lazy until an explicit listening preparation
+ * command. Playback is the shared Web Audio player.
  */
 export function useListening(createClient: () => ListeningClient): ListeningHook {
   const [controller] = useState(

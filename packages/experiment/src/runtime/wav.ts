@@ -1,13 +1,12 @@
 /**
  * Deliberately narrow canonical PCM16 WAV reader for runtime verification.
  *
- * The only accepted input is the exact header shape emitted by the frozen
- * shared `aligned-gain-matched-v1` / `delivered-canary-v1` writers: a 44-byte
- * RIFF/WAVE header, one 16-byte PCM `fmt ` chunk, and one `data` chunk at byte
- * 44. Structure comes from the shared measurements parser; this runtime owns
- * its shared duration-derived per-buffer/retained bounds and 0.4 s minimum. This is
- * not a general WAV parser and must not be widened to accept raw, extensible,
- * 24-bit, RF64 or trailing-chunk files.
+ * Accepts only the header shape emitted by the frozen
+ * `aligned-gain-matched-v1` / `delivered-canary-v1` writers: a 44-byte
+ * RIFF/WAVE header, one 16-byte PCM `fmt ` chunk and one `data` chunk at byte
+ * 44. Structure comes from the shared parser; this runtime owns the
+ * duration-derived per-buffer/retained bounds and the 0.4 s minimum. It must
+ * not be widened to raw, extensible, 24-bit, RF64 or trailing-chunk files.
  */
 import {
   AUDIO_MAX_DELIVERY_SECONDS,

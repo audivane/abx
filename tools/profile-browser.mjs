@@ -2,20 +2,18 @@
 /**
  * Real-browser performance profile for the local WASM codec chain.
  *
- * This tool builds the actual browser preparation engine and its real workers
- * into a temporary directory, serves it from a local same-origin HTTP server,
- * and drives it with Chromium. It records elapsed/progress timings, worker
- * lifecycles, release/after-release facts, renderer main-thread heartbeat gaps
- * and Chromium JS heap/CDP metrics. It does not upload audio and uses no CDN.
+ * Builds the actual browser preparation engine and its real workers into a
+ * temporary directory, serves it from a local same-origin HTTP server and
+ * drives it with Chromium. It records elapsed/progress timings, worker
+ * lifecycles, release facts, renderer main-thread heartbeat gaps and Chromium
+ * heap/CDP metrics, without uploading audio or using a CDN.
  *
  *   node tools/profile-browser.mjs
  *
- * Results are written under build/browser-performance/ (git-ignored):
- *   browser-performance.json
- *   browser-performance.csv
- *
+ * Writes build/browser-performance/browser-performance.{json,csv} (ignored).
  * The WASM working memory may not shrink to its pre-cold value after release;
  * that is reported as observed, not as a guaranteed memory bound.
+ */
  */
 import { createServer } from "node:http";
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile, copyFile } from "node:fs/promises";

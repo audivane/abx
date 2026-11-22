@@ -12,7 +12,8 @@ import {
 } from "./fixtures.js";
 
 const execute = promisify(execFile);
-const ffmpeg = path.resolve("third_party/ffmpeg/bin/ffmpeg");
+// Fixture encoder only: the browser engine under test never executes this tool.
+const ffmpeg = process.env.CODEC_ABX_FFMPEG ?? "ffmpeg";
 
 interface Pcm32Fixture {
   readonly format: "int" | "float";

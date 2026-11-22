@@ -57,7 +57,6 @@ function NoteIcon(): JSX.Element {
 }
 
 export function SourceCard(props: {
-  readonly desktop: boolean;
   readonly name: string | null;
   readonly sizeBytes: number | null;
   readonly prepared: PreparedSourceFacts | null;
@@ -69,7 +68,6 @@ export function SourceCard(props: {
   readonly fileInputRef: RefObject<HTMLInputElement | null>;
   readonly onSelectFile: (event: ChangeEvent<HTMLInputElement>) => void;
   readonly onDropFile: (file: File) => void;
-  readonly onChooseDesktopSource: () => void;
 }): JSX.Element {
   const [dragging, setDragging] = useState(false);
   const hasSource = props.name !== null;
@@ -81,7 +79,7 @@ export function SourceCard(props: {
     props.prepared ? formatLength(props.prepared.seconds) : null,
     props.sizeBytes === null ? null : formatSize(props.sizeBytes),
   ].filter((value): value is string => value !== null);
-  const acceptDrop = !props.desktop && !props.disabled;
+  const acceptDrop = !props.disabled;
   const onDragOver = (event: DragEvent<HTMLElement>): void => {
     if (!acceptDrop || !event.dataTransfer.types.includes("Files")) return;
     event.preventDefault();
@@ -97,7 +95,7 @@ export function SourceCard(props: {
     props.onDropFile(file);
   };
 
-  const picker = props.desktop ? null : (
+  const picker = (
     <input
       id="source-file"
       ref={props.fileInputRef}
@@ -142,15 +140,6 @@ export function SourceCard(props: {
           </div>
           {props.locked ? (
             <span className="lock-note">Locked during the test</span>
-          ) : props.desktop ? (
-            <button
-              type="button"
-              className="ghost"
-              disabled={props.disabled}
-              onClick={props.onChooseDesktopSource}
-            >
-              Replace…
-            </button>
           ) : (
             <label
               htmlFor="source-file"
@@ -160,21 +149,6 @@ export function SourceCard(props: {
               Replace…
             </label>
           )}
-        </div>
-      ) : props.desktop ? (
-        <div className="drop-zone">
-          <span className="file-icon">
-            <NoteIcon />
-          </span>
-          <b>Choose an audio file to compare</b>
-          <button
-            type="button"
-            className="primary"
-            disabled={props.disabled}
-            onClick={props.onChooseDesktopSource}
-          >
-            Choose local audio…
-          </button>
         </div>
       ) : (
         <>

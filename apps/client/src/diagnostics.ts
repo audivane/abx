@@ -52,7 +52,6 @@ export function buildDiagnosticExport(
     : null;
   const ambiguityDisclosures = producerAmbiguityDisclosures(artifact.disclosures);
   const canary = artifact.canary ?? null;
-  const desktopNative = artifact.engine.location === "desktop-native";
   const canaryMaterialChecked = canary !== null;
   // A checked report means both files were generated, even if the failed
   // material check caused their bytes to be discarded before publication.
@@ -120,9 +119,7 @@ export function buildDiagnosticExport(
       canaryGates: false,
       note: policyExecuted
         ? "aligned-gain-matched-v1 executed on decoded codec-stage outputs in " +
-          (desktopNative
-            ? "the Electron main process’s private native TypeScript worker. "
-            : "the browser-local shared preparation pipeline. ") +
+          "the browser-local shared preparation pipeline. " +
           "Applied alignment, independent gains, common peak trim and any tail crop are " +
           "recorded below; delivered measurements are residual measurements of the final " +
           "serialized WAV bytes. The identical-pipeline null gate and any requested canary " +

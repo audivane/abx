@@ -72,7 +72,7 @@ source of truth. Do not run it on renamed outputs. Preserve the OFL notices
 with redistributed fonts and include this modification record in release
 materials.
 
-This addresses font naming and notice handling. Native and browser codec
-release gates remain documented in `docs/distribution-licenses.md` and
-`docs/browser-materials.md`; generating notices alone does not certify a
-published binary or settle codec patent rights.
+This addresses font naming and notice handling. Codec release gates remain
+documented in `docs/distribution-licenses.md` and `docs/browser-materials.md`;
+generating notices alone does not certify a published build or settle codec
+patent rights.

@@ -1,15 +1,12 @@
 /**
  * Strict canonical PCM16 WAV decoding for playback.
  *
- * This accepts only the shared policy envelope: a 44-byte RIFF/WAVE header,
- * one 16-byte PCM `fmt ` chunk, one `data` chunk, mono/stereo, 44.1/48/96 kHz,
+ * Accepts only the shared policy envelope: a 44-byte RIFF/WAVE header, one
+ * 16-byte PCM `fmt ` chunk, one `data` chunk, mono/stereo, 44.1/48/96 kHz,
  * 0.4 s up to the shared delivery ceiling plus explicit codec padding, and at
- * most the shared maximum canonical WAV bytes.
- * AudioBuffers are then created from the actual
+ * most the maximum canonical WAV bytes. AudioBuffers are created from those
  * PCM16 samples; decodeAudioData is never used, so frame counts cannot be
- * silently changed by an implementation-chosen resample. Structure comes from
- * the shared measurements parser; the clip resource/duration bounds and public
- * `load-failed` contract stay here.
+ * silently resampled. Structure comes from the shared measurements parser.
  */
 import {
   AUDIO_MAX_DELIVERY_SECONDS,

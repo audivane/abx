@@ -3,18 +3,11 @@
 | Task | Guide |
 | --- | --- |
 | Use Audivane | [Overview](../README.md) |
-| Build or change it | [Development](development.md) |
+| Build, change or check it | [Development](development.md) |
 | Understand the audio policy | [Methodology](methodology.md), [input limits](audio-import.md) |
-| Run checks | [Verification](verification-workflow.md) |
 | Prepare a release | [Release guide](releasing.md) |
-| Choose formats and hosting | [Distribution strategy](distribution-strategy.md) |
-| Build installers | [Packaging](distribution-packaging.md) |
-| Validate installed apps | [Acceptance matrix](distribution-acceptance.md) |
-| Review licenses | [Matching source and notices](distribution-licenses.md) |
-| Configure signing | [Signing](distribution-signing.md) |
-| Build native codecs | [Linux](linux-native-build.md), [Windows](windows-native-build.md) |
-| Package for Arch | [Arch](arch-distribution.md) |
-| Set up Electron | [Desktop runtime](typescript-desktop-runtime.md) |
+| Review licenses and source offers | [Browser materials](browser-materials.md), [distribution licenses](distribution-licenses.md) |
+| Check fonts | [Font licensing](font-licensing.md) |
 
 [Architecture decision](adr/0001-local-audio-runtime.md) records the current
 architecture decision. [Changelog](../CHANGELOG.md) lists release features.

@@ -13,7 +13,9 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "build/tsconfig.tsbuildinfo"
   },
   "include": ["packages/**/*.ts", "apps/**/*.ts", "apps/**/*.tsx", "tests/e2e/**/*.ts", "tests/audio-output/**/*.ts", "playwright.config.ts"],
   "exclude": ["node_modules", "dist", "build"]

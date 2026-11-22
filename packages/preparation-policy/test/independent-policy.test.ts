@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
-  existsSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
@@ -9,7 +8,6 @@ import {
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
 
 import type { LevelMeasurement } from "@codec-abx/contracts";
 import {
@@ -25,7 +23,6 @@ import {
 } from "../src/index.js";
 import { PCM16_FLOOR_BIAS, quantizePcm16Sample } from "../src/pcm16.js";
 
-const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const FLOOR_BIAS = PCM16_FLOOR_BIAS;
 const QUANTUM = 1 / 32768;
 
@@ -78,8 +75,6 @@ function shifted(source: Float64Array, delay: number): Float64Array {
 }
 
 function ffmpegBinary(): string | null {
-  const vendored = path.join(REPOSITORY_ROOT, "third_party", "ffmpeg", "bin", "ffmpeg");
-  if (existsSync(vendored)) return vendored;
   const probe = spawnSync("ffmpeg", ["-hide_banner", "-version"], { encoding: "utf8" });
   return probe.status === 0 ? "ffmpeg" : null;
 }

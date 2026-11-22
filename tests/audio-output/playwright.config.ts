@@ -7,7 +7,7 @@ const report = process.env.CODEC_ABX_AUDIO_REPORT ??
 
 /**
  * Dedicated serial lane for real OS-level output capture. It is intentionally
- * separate from the normal browser/desktop configurations; a direct run without
+ * separate from the normal browser configuration; a direct run without
  * the private launcher fails in the capture helper instead of skipping.
  *
  * `--mute-audio` is a Playwright default that silences Chromium's OS output even
@@ -16,7 +16,7 @@ const report = process.env.CODEC_ABX_AUDIO_REPORT ??
  */
 export default defineConfig({
   testDir: ".",
-  testMatch: /.*(?:capture\.spec|capture\.electron)\.ts$/,
+  testMatch: /.*capture\.spec\.ts$/,
   timeout: 300_000,
   globalTimeout: 600_000,
   expect: { timeout: 30_000 },

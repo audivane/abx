@@ -3,8 +3,10 @@ import { readFileSync } from "node:fs";
 function read(filename: string): string | null {
   try { return readFileSync(filename, "utf8").trim(); } catch { return null; }
 }
+// Each worker is a Chromium instance holding prepared audio; 2 GiB per worker
+// and twelve workers bound the tail beyond which this suite stops scaling.
 export function boundedWorkers(cpus: number, memoryBytes: number): number {
-  return Math.max(1, Math.min(8, Math.floor(cpus) - 2, Math.floor(memoryBytes / 2 ** 31)));
+  return Math.max(1, Math.min(12, Math.floor(cpus) - 2, Math.floor(memoryBytes / 2 ** 31)));
 }
 export function browserWorkers(): number {
   let cpus = availableParallelism();

@@ -7,7 +7,6 @@ export { AUDIO_MAX_INPUT_BYTES, AUDIO_MAX_DURATION_SECONDS, AUDIO_MAX_WAV_BYTES,
   AUDIO_MAX_DELIVERY_FRAMES, AUDIO_MAX_CANARY_WAV_BYTES,
   AUDIO_MAX_DECODED_FLOAT64_BYTES_PER_SIDE,
   AUDIO_MAX_RETAINED_FLOAT64_BYTES } from "./audio-limits.js";
-export type { DesktopSource, DesktopExperimentBridge, DesktopBridge, DesktopRuntimeFailure } from "./desktop.js";
 export type { OutputDeviceEntry, OutputDeviceOperation, OutputDeviceSupport,
   OutputRouteChange, PlaybackLoop, PlaybackOutputState, PlaybackSnapshot,
   TrialAudioReader, TrialLoadOptions, TrialPlayer } from "./playback.js";
@@ -24,7 +23,7 @@ export type { NullGateDecision, CanaryDepthDecision, CanaryMaterialReport,
 export type { PairPreparationReport, PreparationPolicyId } from "./preparation-policy.js";
 export type { AlignmentEstimate, LevelMeasurement, AudioMeasurementSummary,
   DeliveredPairMeasurements } from "./measurements.js";
-export type EngineLocation = "desktop-native" | "browser-local" | "optional-server";
+export type EngineLocation = "browser-local" | "optional-server";
 export type Side = "a" | "b";
 export type CanarySide = "pristine" | "degraded";
 export const CODEC_IDS = Object.freeze(["noop_passthrough", "opus", "aac", "ogg_vorbis", "mp3", "mp2", "lc3", "sbc", "aptx", "aptx_hd", "ldac"] as const);
@@ -205,3 +204,8 @@ export function freezeRequest(value: unknown): PreparationRequest {
   };
   return Object.freeze({ version: 2, ...global, a: chain(request.a), b: chain(request.b) });
 }
+
+export { SHARED_TEST_MAX_STAGES, SHARED_TEST_MIN_TRIALS,
+  SHARED_TEST_MAX_TRIALS, SHARED_TEST_MAX_TITLE_CHARS, SHARED_TEST_MAX_FRAGMENT_CHARS,
+  encodeSharedTest, sharedTestUrl, parseSharedTestFragment } from "./shared-test.js";
+export type { SharedSourceHint, SharedTest, SharedTestParse } from "./shared-test.js";

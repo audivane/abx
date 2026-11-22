@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
-  existsSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
@@ -9,7 +8,6 @@ import {
 import os from "node:os";
 import path from "node:path";
 import test, { type TestContext } from "node:test";
-import { fileURLToPath } from "node:url";
 
 import type { LevelMeasurement } from "@codec-abx/contracts";
 import {
@@ -35,18 +33,15 @@ import {
 
 /**
  * Independent loudness/quantization evidence for the frozen
- * `aligned-gain-matched-v1` policy.
- *
- * Evidence classes kept separate in this file:
- * - analytical properties of known generated signals (level ratios, channel
- *   energy sums, block/gate arithmetic, signed PCM16 boundaries);
- * - delivery self-checks of the exact served WAV bytes against the report
- *   (the same shared meter is intentionally used here only to check delivery);
- * - a separate external FFmpeg `ebur128` implementation. It corroborates the
- *   product target/properties where both interpretations agree, and its known
- *   partial-block difference is recorded rather than forced into equality.
+ * `aligned-gain-matched-v1` policy, in separate classes:
+ * - analytical properties of generated signals (level ratios, channel energy
+ *   sums, block/gate arithmetic, signed PCM16 boundaries);
+ * - delivery self-checks of the served WAV bytes against the report (the shared
+ *   meter is used here only to check delivery);
+ * - a separate external FFmpeg `ebur128` implementation, which corroborates
+ *   the product target where both agree; its known partial-block difference is
+ *   recorded rather than forced into equality.
  */
-const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const REQUIRE_INDEPENDENT = process.env.CODEC_ABX_REQUIRE_INDEPENDENT_LOUDNESS === "1";
 const FFMPEG = ffmpegBinary();
 
@@ -186,8 +181,6 @@ function assertServedMatchesReportedGains(
 }
 
 function ffmpegBinary(): string | null {
-  const vendored = path.join(REPOSITORY_ROOT, "third_party", "ffmpeg", "bin", "ffmpeg");
-  if (existsSync(vendored)) return vendored;
   const probe = spawnSync("ffmpeg", ["-hide_banner", "-version"], { encoding: "utf8" });
   return probe.status === 0 ? "ffmpeg" : null;
 }
@@ -237,7 +230,7 @@ function checkExternalAvailability(t: TestContext): string | null {
   if (REQUIRE_INDEPENDENT) {
     assert.fail(
       "CODEC_ABX_REQUIRE_INDEPENDENT_LOUDNESS=1 requires FFmpeg ebur128, but no " +
-        "vendored or PATH FFmpeg was found; the production lane must not omit external evidence",
+        "FFmpeg was found on PATH; the production lane must not omit external evidence",
     );
   }
   t.diagnostic(
@@ -312,7 +305,7 @@ test("production lane requires the separate FFmpeg ebur128 implementation", (t) 
     if (REQUIRE_INDEPENDENT) {
       assert.fail(
         "production independent-loudness evidence requires FFmpeg ebur128; " +
-          "install the vendored FFmpeg or provide it on PATH",
+          "provide FFmpeg on PATH",
       );
     }
     t.diagnostic(

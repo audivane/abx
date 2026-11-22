@@ -430,7 +430,6 @@ async function harness(): Promise<Harness> {
     createPlayer: () => player,
   });
   const workflow = new PrepareTestWorkflow<string, PreparedArtifact>({
-    desktop: false,
     engine,
     controller,
     readers: READERS,

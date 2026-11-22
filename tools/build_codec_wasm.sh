@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 #
-# Build the browser's supplemental LC3/LDAC WASM codecs from the exact pinned
-# sources the native tier uses, then install them (plus VERSION.txt) into
-# third_party/wasm/.
+# Build the browser's supplemental LC3/LDAC WASM codecs from pinned upstream
+# sources, then install them (plus VERSION.txt) into third_party/wasm/.
 #
 #   lc3_codec.js/.wasm   liblc3 1.1.3 (google/liblc3) + tools/lc3_wasm.c
 #   ldac_codec.js/.wasm  AOSP libldac 2.00.02 (eeee1a3f, encoder) +
 #                        hegdi/libldacdec (7f3bd6cc, decoder) + tools/ldac_wasm.c
 #
 # Requires emsdk (no sudo); it is downloaded into $CODEC_WASM_EMSDK_DIR the
-# first time. The LC3 source tarball is verified against the same SHA-256
-# that tools/build_ffmpeg.sh pins, so the browser uses the exact codec bits
-# as the native tier.
+# first time. The source pins below are recorded again in
+# third_party/wasm/VERSION.txt.
 #
 # Environment:
 #   CODEC_WASM_BUILD_DIR  sources/objects (default: /tmp/opencode/codec-wasm-build)
@@ -30,8 +28,9 @@ JOBS="${JOBS:-$(nproc)}"
 
 LIBLC3_VERSION="1.1.3"
 LIBLC3_REPO="https://github.com/google/liblc3"
-# Pinned tarball SHA-256 mirrors tools/build_ffmpeg.sh (single source of truth).
-LIBLC3_SHA256="$(sed -n 's/^LC3_SHA="\([^"]*\)".*/\1/p' "$ROOT/tools/build_ffmpeg.sh")"
+LIBLC3_SHA256="276752ff54ce6a77d54ec133397b9d7e71f90caf3d9afa32d8b0e891b8ecb8af"
+LIBLDAC_COMMIT="eeee1a3f5f8df1282e3a6d297085885fd886737b"
+LIBLDACDEC_COMMIT="7f3bd6cc1586b764b02f2e4f20b16c7ff18758b9"
 
 CLEAN=0
 for arg in "$@"; do
@@ -82,10 +81,6 @@ fetch_liblc3() {
     local tarball="liblc3-${LIBLC3_VERSION}.tar.gz"
     local src_dir="liblc3-${LIBLC3_VERSION}"
     local url="https://github.com/google/liblc3/archive/refs/tags/v${LIBLC3_VERSION}.tar.gz"
-    if [ -z "$LIBLC3_SHA256" ]; then
-        echo "error: cannot resolve liblc3 checksum from tools/build_ffmpeg.sh" >&2
-        exit 1
-    fi
     if [ ! -f "$tarball" ]; then
         echo "==> downloading $url"
         curl -fsSL "$url" -o "$tarball"
@@ -113,12 +108,6 @@ fetch_repo() {
         exit 1
     fi
 }
-
-# Read the pinned LDAC commits from the canonical native build script.
-LIBLDAC_COMMIT="$(sed -n 's/^LIBLDAC_COMMIT="\([^"]*\)".*/\1/p' "$ROOT/tools/build_ldac_helper.sh")"
-LIBLDACDEC_COMMIT="$(sed -n 's/^LIBLDACDEC_COMMIT="\([^"]*\)".*/\1/p' "$ROOT/tools/build_ldac_helper.sh")"
-[ -n "$LIBLDAC_COMMIT" ] && [ -n "$LIBLDACDEC_COMMIT" ] \
-    || { echo "error: cannot resolve libldac commits from tools/build_ldac_helper.sh" >&2; exit 1; }
 
 fetch_liblc3
 fetch_repo "$BUILD_DIR/libldac" "https://android.googlesource.com/platform/external/libldac" "$LIBLDAC_COMMIT"

@@ -44,7 +44,7 @@ The wordmark is outlined from the project's IBM Plex Sans Medium font. Its
 remain with the project; the logo requires no font installation.
 The original symbol is covered by the project [AGPL-3.0-only license](../../LICENSE).
 
-Distribution icon exports now live in `icons/` (16–512 px PNG and Windows ICO).
-Regenerate them with `npm run icons:export`; the original SVG remains the source.
-The app header, browser favicon, desktop window and installer use this identity. Stable scientific/export identifiers do not need
-to change with the display branding.
+Raster icon exports live in `icons/` (16–512 px PNG and a Windows ICO). The
+original SVG remains the source. The app header, browser favicon and site icons
+use this identity. Stable scientific/export identifiers do not need to change
+with the display branding.

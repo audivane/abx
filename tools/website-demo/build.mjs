@@ -1,13 +1,13 @@
-// Builds the versioned, self-describing website demo bundle in abx:
-//   - abx-demo-<version>.tar.zst: built apps/client bundle under base "/abx/demo/"
-//     with <meta name="robots" content="noindex">
-//   - /sources/browser/ payload: audivane-source.tar.gz,
-//     browser-codec-materials.tar.gz, NOTICES.md, SOURCE-OFFER.md, REPORT.json,
-//     SHA256SUMS.txt, release.json
-//   - manifest.json: version, git commit, dirty flags, file list, sizes, sha256
+// Builds the versioned, self-describing website bundle for /abx/:
+//   - abx-demo-<version>.tar.zst: the client built under base "/abx/" with
+//     indexable site metadata checked by the build
+//   - audivane-source.tar.gz, browser-codec-materials.tar.gz, NOTICES.md,
+//     SOURCE-OFFER.md, REPORT.json, SHA256SUMS.txt and release.json for
+//     /sources/browser/
+//   - manifest.json: version, commit, dirty flags, file list, sizes, sha256
 //
-// Provenance honesty: reports commit/dirty/appSourcesDirty honestly and
-// refuses if inputs or collected sources change during the build/collection.
+// Provenance is reported honestly, and the build refuses inputs or collected
+// sources that change while it runs.
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, promises as fs } from 'node:fs';
@@ -18,12 +18,16 @@ import { cancellation, run } from '../verification/process.mjs';
 import { copyWasmAssets } from '../copy-wasm-assets.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const websiteDemoBase = '/abx/demo/';
+export const websiteBase = '/abx/';
+export const websiteUrl = 'https://audivane.app/abx/';
+export const siteTitle = 'Audivane ABX — Blind audio comparisons';
+export const siteDescription =
+  'Compare two audio codec chains from your own file and take a blind ABX ' +
+  'listening test in your browser. Audio stays on your device.';
 const lockPath = path.join(root, 'build/verification.lock');
 const gitSnapshotEntry = 'build/verification-demo-git.json';
-const noindexMeta = '<meta name="robots" content="noindex">';
 
-const dependencyManifests = ['vite', 'esbuild', 'react', 'react-dom', '@ffmpeg/core', '@ffmpeg/ffmpeg']
+const dependencyManifests = ['vite', 'react', 'react-dom', '@ffmpeg/core', '@ffmpeg/ffmpeg', 'uqr']
   .map(name => `node_modules/${name}/package.json`);
 
 export function gitProvenance(repository = root) {
@@ -46,19 +50,71 @@ export function releaseDocument({ version, base, commit, dirty, appSourcesDirty 
   return { schema: 'codec-abx-website-release-v1', version, commit, dirty, appSourcesDirty, base };
 }
 
-export function withNoindex(html) {
-  const robots = html.match(/<meta\s[^>]*name=["']robots["'][^>]*>/i);
-  if (robots) {
-    if (/noindex/i.test(robots[0])) return html;
-    throw new Error('The demo HTML already declares a robots meta without noindex; refusing to overwrite it');
-  }
+/**
+ * Give the built page indexable metadata. Source pages carry their own title
+ * and description; this replaces them with the published wording and adds the
+ * absolute canonical and social tags that only make sense at the hosted URL.
+ * Existing social/canonical tags are replaced so the transform is idempotent.
+ */
+export function withSiteMetadata(html) {
   const head = html.match(/<head[^>]*>/i);
-  if (!head) throw new Error('The demo HTML has no <head> to receive the noindex meta');
-  return `${html.slice(0, head.index + head[0].length)}\n    ${noindexMeta}${html.slice(head.index + head[0].length)}`;
+  if (!head) throw new Error('The bundle HTML has no <head> for site metadata');
+  let output = html
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${siteTitle}</title>`)
+    .replace(/<meta\s+name=["']description["'][^>]*>/i, `<meta name="description" content="${siteDescription}">`)
+    .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, '')
+    .replace(/<meta\s+property=["']og:[^"']*["'][^>]*>/gi, '')
+    .replace(/<meta\s+name=["']twitter:[^"']*["'][^>]*>/gi, '')
+    // Removing an earlier metadata block also removes its line indentation;
+    // collapse the leftover blank lines so a repeated transform is identical.
+    .replace(/^[ \t]+$/gm, '')
+    .replace(/\n{2,}/g, '\n');
+  const tags = [
+    `<link rel="canonical" href="${websiteUrl}">`,
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:site_name" content="Audivane">`,
+    `<meta property="og:title" content="${siteTitle}">`,
+    `<meta property="og:description" content="${siteDescription}">`,
+    `<meta property="og:url" content="${websiteUrl}">`,
+    `<meta name="twitter:card" content="summary">`,
+    `<meta name="twitter:title" content="${siteTitle}">`,
+    `<meta name="twitter:description" content="${siteDescription}">`,
+  ];
+  const closeAt = output.search(/<\/head>/i);
+  if (closeAt < 0) throw new Error('The bundle HTML has no closing </head> for site metadata');
+  const before = output.slice(0, closeAt).replace(/\s+$/, '');
+  output = `${before}\n    ${tags.join('\n    ')}\n  ${output.slice(closeAt)}`;
+  return output;
+}
+
+/** Refuse a bundle whose index.html lost any published metadata tag. */
+export function assertSiteMetadata(html) {
+  const require = (pattern, label) => {
+    if (!pattern.test(html)) throw new Error(`website-demo: built index.html is missing ${label}`);
+  };
+  require(new RegExp(`<title>${siteTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</title>`), 'the site title');
+  require(new RegExp(`<meta\\s+name=["']description["']\\s+content=["']${escapeRegExp(siteDescription)}["']`), 'the meta description');
+  require(new RegExp(`<link\\s+rel=["']canonical["']\\s+href=["']${escapeRegExp(websiteUrl)}["']`), 'the canonical URL');
+  for (const [property, label] of [
+    ['og:type', 'og:type'],
+    ['og:title', 'og:title'],
+    ['og:description', 'og:description'],
+    ['og:url', 'og:url'],
+  ]) {
+    require(new RegExp(`<meta\\s+property=["']${property}["']\\s+content=["'][^"']+["']`), `the ${label} tag`);
+  }
+  for (const name of ['twitter:card', 'twitter:title', 'twitter:description']) {
+    require(new RegExp(`<meta\\s+name=["']${name}["']\\s+content=["'][^"']+["']`), `the ${name} tag`);
+  }
+  if (/<meta\s+name=["']robots["']/i.test(html)) throw new Error('website-demo: built index.html must stay indexable');
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function assertDistinctFromSharedArtifacts(outDir) {
-  for (const shared of [path.join(root, 'apps/client/dist'), path.join(root, 'apps/desktop/dist')]) {
+  for (const shared of [path.join(root, 'apps/client/dist')]) {
     for (const relative of [path.relative(outDir, shared), path.relative(shared, outDir)]) {
       if (relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative)))
         throw new Error(`Website demo output ${outDir} must not overlap the shared artifact ${shared}`);
@@ -73,7 +129,7 @@ async function sha256File(filename) {
 }
 
 export async function buildDemo({
-  base = websiteDemoBase,
+  base = websiteBase,
   outDir = path.join(root, 'build/website-demo-stage/demo'),
   releasePath = path.join(root, 'build/website-demo-stage/release.json'),
   stampName = 'website-demo',
@@ -117,7 +173,9 @@ export async function buildDemo({
           env: { ...process.env, CODEC_ABX_WEBSITE_DEMO_BASE: base, CODEC_ABX_WEBSITE_DEMO_OUT_DIR: absoluteOut },
         });
         const htmlPath = path.join(absoluteOut, 'index.html');
-        await fs.writeFile(htmlPath, withNoindex(await fs.readFile(htmlPath, 'utf8')));
+        const html = withSiteMetadata(await fs.readFile(htmlPath, 'utf8'));
+        assertSiteMetadata(html);
+        await fs.writeFile(htmlPath, html);
         await fs.mkdir(path.dirname(absoluteRelease), { recursive: true });
         await fs.writeFile(absoluteRelease, `${JSON.stringify(releaseDocument(snapshot), null, 2)}\n`);
       },

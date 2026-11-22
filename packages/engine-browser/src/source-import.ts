@@ -17,12 +17,11 @@ import {
 /**
  * Browser source import.
  *
- * File extensions and MIME types are deliberately not inputs to classification:
- * the first bytes of the selected file must match a small audio-container
- * allowlist. Playlists, URLs and arbitrary containers are therefore refused
- * before any FFmpeg command runs. A container signature is still not trusted
- * as media metadata; FFmpeg's real input probe and, above all, the decoded
- * canonical PCM16 snapshot establish the accepted sample facts.
+ * File extensions and MIME types are deliberately not classification inputs:
+ * the first bytes must match a small audio-container allowlist, so playlists,
+ * URLs and arbitrary containers are refused before any FFmpeg command runs. A
+ * signature is still not trusted as metadata; FFmpeg's input probe and the
+ * decoded canonical PCM16 snapshot establish the accepted sample facts.
  */
 
 export type AudioImportFormatId = "wav" | "flac" | "mp3" | "m4a" | "ogg" | "aac";

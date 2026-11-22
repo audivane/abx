@@ -9,6 +9,8 @@ import {
 } from "react";
 import {
   CODEC_CATALOG,
+  encodeSharedTest,
+  parseSharedTestFragment,
   type CanarySide,
   type CodecSelection,
   type EngineCapabilities,
@@ -18,12 +20,13 @@ import {
   type PreparationProgress,
   type PreparationRequest,
   type SampleRateMode,
+  type SharedTest,
   type Side,
 } from "@codec-abx/contracts";
 
 import { chainLabel, codecLabel } from "./codecs";
 import { buildDiagnosticExport } from "./diagnostics";
-import { desktopErrorMessage } from "./desktop/bridge";
+import { triggerDownload } from "./download";
 import { formatLength } from "./format";
 import { RunActions } from "./listening/RunActions";
 import type { EvidenceDetailsState } from "./evidence/details";
@@ -47,7 +50,7 @@ import {
   type PrepareTestRequestMode,
 } from "./preparation/workflow";
 import {
-  detectClientRuntime,
+  createClientRuntime,
   sourceName as clientSourceName,
   sourceSize as clientSourceSize,
   type ClientRuntime,
@@ -62,7 +65,12 @@ import {
   isAvailable,
   stageSelection,
 } from "./setup/StageEditor";
-import { sourceOfferLink, WEBSITE_DEMO_BASE } from "./source-offer";
+import { ShareDialog, type ShareRequest } from "./share/ShareDialog";
+import {
+  sameSharedSetup,
+  sharedTestSummary,
+} from "./share/summary";
+import { sourceOfferLink, WEBSITE_BASE } from "./source-offer";
 import { deviceLabel, OutputDevicePanel } from "./workspace/OutputDevicePanel";
 import { SessionStrip } from "./workspace/SessionStrip";
 import { useThemePreference } from "./workspace/ThemeSwitcher";
@@ -108,10 +116,47 @@ function sampleUrlList(urls: SampleUrls): readonly string[] {
 }
 
 function errorMessage(error: unknown): string {
-  return desktopErrorMessage(error);
+  if (error !== null && typeof error === "object" &&
+    typeof (error as { message?: unknown }).message === "string") {
+    return (error as { message: string }).message;
+  }
+  return String(error);
 }
 
 const MAX_STAGES_PER_SIDE = 4;
+
+const DEFAULT_STAGES_A: readonly CodecSelection[] = Object.freeze([
+  Object.freeze({ codecId: "noop_passthrough" as const, bitrateKbps: 0 }),
+]);
+const DEFAULT_STAGES_B: readonly CodecSelection[] = Object.freeze([
+  Object.freeze({ codecId: "opus" as const, bitrateKbps: 128 }),
+]);
+const DEFAULT_PLAN_FIELDS: PlanFormFields = Object.freeze({
+  plannedTrials: String(LISTENING_DEFAULTS.plannedTrials),
+  alpha: String(LISTENING_DEFAULTS.alpha),
+  labelMode: LISTENING_DEFAULTS.labelMode,
+});
+
+type SharedBanner =
+  | { readonly kind: "ok"; readonly test: SharedTest }
+  | { readonly kind: "invalid"; readonly reason: string };
+
+/** Drop a test link from the address bar once it has been read. */
+function removeShareFragment(): void {
+  window.history.replaceState(
+    window.history.state,
+    "",
+    window.location.pathname + window.location.search,
+  );
+}
+
+function planFieldsFromShare(test: SharedTest): PlanFormFields {
+  return {
+    plannedTrials: String(test.plan.plannedTrials),
+    alpha: String(test.plan.alpha),
+    labelMode: test.plan.labelMode,
+  };
+}
 
 function phaseLabel(phase: PreparationProgress["phase"]): string {
   switch (phase) {
@@ -130,18 +175,6 @@ function phaseLabel(phase: PreparationProgress["phase"]): string {
   }
 }
 
-function triggerDownload(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.rel = "noopener";
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
-}
-
 function planMatches(
   snapshot: ExperimentSnapshot,
   fields: ListeningPlanFields,
@@ -156,24 +189,21 @@ function planMatches(
 
 function CapabilitiesPanel(props: {
   readonly state: CapabilitiesState;
-  readonly kind: ClientRuntimeKind;
 }): JSX.Element {
-  const desktop = props.kind === "desktop";
+  const kind: ClientRuntimeKind = "browser";
   if (props.state.status === "loading") {
     return (
       <section
         className="capability-strip"
         aria-labelledby="capabilities-heading"
-        data-runtime={props.kind}
+        data-runtime={kind}
       >
         <div className="section-head">
           <h2 id="capabilities-heading">Runtime capabilities</h2>
           <p className="section-meta">Probing the local runtime</p>
         </div>
         <p role="status" className="hint">
-          {desktop
-            ? "Probing native TypeScript/FFmpeg in Electron’s private worker…"
-            : "Loading the local WASM core and probing real encoders/decoders…"}
+          Loading the local WASM core and probing real encoders/decoders…
         </p>
       </section>
     );
@@ -183,7 +213,7 @@ function CapabilitiesPanel(props: {
       <section
         className="capability-strip"
         aria-labelledby="capabilities-heading"
-        data-runtime={props.kind}
+        data-runtime={kind}
       >
         <div className="section-head">
           <h2 id="capabilities-heading">Runtime capabilities</h2>
@@ -194,7 +224,7 @@ function CapabilitiesPanel(props: {
         </p>
         <p className="hint">
           No engine substitution, upload or simulated codec fallback is applied.
-          Restore the disclosed desktop prerequisites and retry explicitly.
+          Reload the page to retry.
         </p>
       </section>
     );
@@ -205,7 +235,7 @@ function CapabilitiesPanel(props: {
     <section
       className="capability-strip"
       aria-labelledby="capabilities-heading"
-      data-runtime={props.kind}
+      data-runtime={kind}
     >
       <div className="section-head">
         <h2 id="capabilities-heading">Runtime capabilities</h2>
@@ -221,7 +251,7 @@ function CapabilitiesPanel(props: {
         <summary>Codecs and limits</summary>
         <dl className="facts">
           <dt>Processing</dt>
-          <dd>{desktop ? "On this computer" : "In this browser"}</dd>
+          <dd>In this browser</dd>
           <dt>File limit</dt>
           <dd>
             {Math.round(capabilities.maxInputBytes / (1024 * 1024))} MiB ·{" "}
@@ -251,25 +281,8 @@ function CapabilitiesPanel(props: {
 }
 
 export function App(): JSX.Element {
-  const [startup] = useState<
-    | { readonly runtime: ClientRuntime; readonly error: null }
-    | { readonly runtime: null; readonly error: string }
-  >(() => {
-    try {
-      return { runtime: detectClientRuntime(), error: null };
-    } catch (error) {
-      return { runtime: null, error: errorMessage(error) };
-    }
-  });
-  if (startup.runtime === null) {
-    return (
-      <main className="app" role="alert">
-        <h1>Desktop unavailable</h1>
-        <p>{startup.error}</p>
-      </main>
-    );
-  }
-  return <RuntimeApp runtime={startup.runtime} />;
+  const [runtime] = useState(createClientRuntime);
+  return <RuntimeApp runtime={runtime} />;
 }
 
 function RuntimeApp({
@@ -277,37 +290,48 @@ function RuntimeApp({
 }: {
   readonly runtime: ClientRuntime;
 }): JSX.Element {
-  const desktop = runtime.kind === "desktop";
+  const kind: ClientRuntimeKind = "browser";
   const engine = runtime.preparation;
   const { preference: themePreference, setPreference: setThemePreference } =
     useThemePreference();
   const [view, setView] = useState<WorkspaceView>("setup");
+  // A test link fills the setup once at load; nothing prepares or plays.
+  const [initialShare] = useState(() =>
+    parseSharedTestFragment(window.location.hash),
+  );
+  const sharedAtLoad = initialShare.status === "ok" ? initialShare.test : null;
+  const [sharedBanner, setSharedBanner] = useState<SharedBanner | null>(() =>
+    initialShare.status === "ok"
+      ? { kind: "ok", test: initialShare.test }
+      : initialShare.status === "invalid"
+        ? { kind: "invalid", reason: initialShare.reason }
+        : null,
+  );
+  const [shareRequest, setShareRequest] = useState<ShareRequest | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesState>({
     status: "loading",
   });
   const [stagesA, setStagesA] = useState<readonly CodecSelection[]>(
-    Object.freeze([
-      Object.freeze({ codecId: "noop_passthrough" as const, bitrateKbps: 0 }),
-    ]),
+    sharedAtLoad?.a ?? DEFAULT_STAGES_A,
   );
   const [stagesB, setStagesB] = useState<readonly CodecSelection[]>(
-    Object.freeze([
-      Object.freeze({ codecId: "opus" as const, bitrateKbps: 128 }),
-    ]),
+    sharedAtLoad?.b ?? DEFAULT_STAGES_B,
   );
-  const [rateMode, setRateMode] = useState<SampleRateMode>("native");
+  const [rateMode, setRateMode] = useState<SampleRateMode>(
+    sharedAtLoad?.sampleRateMode ?? "native",
+  );
   const [preparationMode, setPreparationMode] =
     useState<BrowserPreparationMode>("aligned-gain-matched-v1");
   /** One opt-in: canary generation and the listening calibration plan. */
-  const [calibrationEnabled, setCalibrationEnabled] = useState(false);
+  const [calibrationEnabled, setCalibrationEnabled] = useState(
+    sharedAtLoad?.canaryEnabled ?? false,
+  );
   const [modeNotice, setModeNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [samples, setSamples] = useState<SampleUrls>(EMPTY_SAMPLES);
-  const [planFields, setPlanFields] = useState<PlanFormFields>({
-    plannedTrials: String(LISTENING_DEFAULTS.plannedTrials),
-    alpha: String(LISTENING_DEFAULTS.alpha),
-    labelMode: LISTENING_DEFAULTS.labelMode,
-  });
+  const [planFields, setPlanFields] = useState<PlanFormFields>(() =>
+    sharedAtLoad === null ? DEFAULT_PLAN_FIELDS : planFieldsFromShare(sharedAtLoad),
+  );
   const [planError, setPlanError] = useState<string | null>(null);
 
   const listening = useListening(runtime.createListeningClient);
@@ -413,10 +437,9 @@ function RuntimeApp({
       inputs: PrepareTestInputs,
       mode: PrepareTestRequestMode,
     ): PreparationRequest => {
-      // Desktop always requests the explicit shared policy of the native
-      // TypeScript engine. Raw codec-probe-only is never a native fallback.
+      // The primary action always requests the shared policy; the advanced
+      // manual form may deliberately request the raw probe.
       const selectedPolicy =
-        desktop ||
         mode === "prepare-test" ||
         inputs.diagnosticPolicy === "aligned-gain-matched-v1"
           ? { preparationPolicy: "aligned-gain-matched-v1" as const }
@@ -456,7 +479,7 @@ function RuntimeApp({
             ),
           };
     },
-    [desktop],
+    [],
   );
 
   // One workflow per mounted app. It is created lazily so its lifecycle and
@@ -464,7 +487,6 @@ function RuntimeApp({
   const [workflow] = useState(
     () =>
       new PrepareTestWorkflow<ClientSource, PreparedArtifact>({
-        desktop,
         engine,
         controller: listening.controller,
         readers: listeningReaders,
@@ -577,9 +599,7 @@ function RuntimeApp({
       sourceIdentity:
         source === null
           ? "none"
-          : source.kind === "file"
-            ? `file:${source.file.name}:${source.file.size}:${source.file.lastModified}`
-            : `desktop:${source.source.name}:${source.source.size}`,
+          : `file:${source.name}:${source.size}:${source.lastModified}`,
       stagesA,
       stagesB,
       rateMode,
@@ -599,19 +619,7 @@ function RuntimeApp({
     if (listeningLocksLab) return;
     const selected = event.target.files?.[0] ?? null;
     if (!selected) return;
-    void chooseSource({ kind: "file", file: selected });
-  };
-
-  const chooseDesktopSource = async (): Promise<void> => {
-    if (listeningLocksLab || controlsDisabled) return;
-    try {
-      const selected = await engine.pickSource();
-      if (!selected || !mountedRef.current) return;
-      await chooseSource(selected);
-    } catch (reason: unknown) {
-      if (mountedRef.current)
-        setError(`Source selection failed: ${errorMessage(reason)}`);
-    }
+    void chooseSource(selected);
   };
 
   const beginPrepare = (): void => {
@@ -623,12 +631,7 @@ function RuntimeApp({
       !preparationModeSupported
     )
       return;
-    if (
-      !desktop &&
-      preparationMode === "codec-probe-only" &&
-      calibrationEnabled
-    )
-      return;
+    if (preparationMode === "codec-probe-only" && calibrationEnabled) return;
     setModeNotice(null);
     void workflow.prepareDiagnostic(inputs);
   };
@@ -827,7 +830,7 @@ function RuntimeApp({
   const supportedPolicies =
     caps?.supportedPreparationPolicies ??
     (caps ? [caps.preparationPolicy] : []);
-  const requestedPolicy = desktop ? "aligned-gain-matched-v1" : preparationMode;
+  const requestedPolicy = preparationMode;
   const preparationModeSupported =
     supportedPolicies.length === 0 ||
     supportedPolicies.includes(requestedPolicy);
@@ -835,7 +838,7 @@ function RuntimeApp({
     supportedPolicies.length === 0 ||
     supportedPolicies.includes("aligned-gain-matched-v1");
   const manualCanaryConflict =
-    !desktop && preparationMode === "codec-probe-only" && calibrationEnabled;
+    preparationMode === "codec-probe-only" && calibrationEnabled;
   // A missing source stays a gate but carries no message: the disabled
   // action already says it, and the setup view repeats it enough.
   const manualPrepareBlockedReason = listeningLocksLab
@@ -905,6 +908,86 @@ function RuntimeApp({
   const primaryPairReady = workflow.isPairReady(inputs);
   const globalError = error ?? workflowState.error;
   const snapshot = listening.state.snapshot;
+
+  // Shared test links: read at load (above) or when a link is opened in this
+  // tab later, then removed from the address bar.
+  const applySharedTest = useCallback((test: SharedTest): void => {
+    setStagesA(test.a);
+    setStagesB(test.b);
+    setRateMode(test.sampleRateMode);
+    setCalibrationEnabled(test.canaryEnabled);
+    setPlanFields(planFieldsFromShare(test));
+    setPlanError(null);
+    setModeNotice(null);
+  }, []);
+  useEffect(() => {
+    if (parseSharedTestFragment(window.location.hash).status !== "none")
+      removeShareFragment();
+    const onHashChange = (): void => {
+      const parsed = parseSharedTestFragment(window.location.hash);
+      if (parsed.status === "none") return;
+      removeShareFragment();
+      if (parsed.status === "invalid") {
+        setSharedBanner({ kind: "invalid", reason: parsed.reason });
+        return;
+      }
+      if (listeningLocksRef.current) {
+        setSharedBanner({
+          kind: "invalid",
+          reason: "End the current test, then open the link again.",
+        });
+        return;
+      }
+      applySharedTest(parsed.test);
+      setSharedBanner({ kind: "ok", test: parsed.test });
+      setView("setup");
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [applySharedTest]);
+
+  /** The current setup when it can be shared; null while the plan is invalid. */
+  const shareSetup = useMemo<SharedTest | null>(() => {
+    const plan = planValidation.plan;
+    if (plan === null || plan.plannedTrials === null) return null;
+    const setup: SharedTest = {
+      a: stagesA,
+      b: stagesB,
+      sampleRateMode: rateMode,
+      canaryEnabled: calibrationEnabled,
+      plan: { ...plan, plannedTrials: plan.plannedTrials },
+    };
+    try {
+      encodeSharedTest(setup);
+      return setup;
+    } catch {
+      return null;
+    }
+  }, [planValidation.plan, stagesA, stagesB, rateMode, calibrationEnabled]);
+
+  const sharedTest = sharedBanner?.kind === "ok" ? sharedBanner.test : null;
+  const sharedHint = sharedTest?.source ?? null;
+  const sharedEdited =
+    sharedTest !== null && (shareSetup === null || !sameSharedSetup(sharedTest, shareSetup));
+
+  const clearSharedTest = (): void => {
+    if (sharedBanner?.kind === "ok" && !controlsDisabled) {
+      applySharedTest({
+        a: DEFAULT_STAGES_A,
+        b: DEFAULT_STAGES_B,
+        sampleRateMode: "native",
+        canaryEnabled: false,
+        plan: {
+          version: 1,
+          plannedTrials: LISTENING_DEFAULTS.plannedTrials,
+          alpha: LISTENING_DEFAULTS.alpha,
+          labelMode: LISTENING_DEFAULTS.labelMode,
+          calibrationEnabled: false,
+        },
+      });
+    }
+    setSharedBanner(null);
+  };
 
   const prepareTest = (): void => {
     if (
@@ -1036,6 +1119,12 @@ function RuntimeApp({
       onDownload={() => void downloadResults()}
       onReset={() => void restartListeningRun()}
       onClose={() => void closeListeningRun()}
+      {...(shareSetup !== null
+        ? {
+            onShare: () =>
+              setShareRequest({ setup: shareSetup, copyOnOpen: false }),
+          }
+        : {})}
       clear={
         listeningLocksLab || artifact === null
           ? null
@@ -1079,9 +1168,8 @@ function RuntimeApp({
     status === "complete" &&
     workflowState.phase === "idle" &&
     !listeningLocksLab;
-  const websiteHome = !desktop && import.meta.env.BASE_URL === WEBSITE_DEMO_BASE;
+  const websiteHome = import.meta.env.BASE_URL === WEBSITE_BASE;
   const sourceOffer = sourceOfferLink({
-    desktop,
     baseUrl: import.meta.env.BASE_URL,
   });
 
@@ -1156,13 +1244,13 @@ function RuntimeApp({
     : "Up to 30 min · 512 MiB · 32-bit input";
   const advancedSummary = [
     rateMode === "native" ? "Native source rate" : "48 kHz delivery",
-    desktop || preparationMode === "aligned-gain-matched-v1"
+    preparationMode === "aligned-gain-matched-v1"
       ? "aligned + gain-matched"
       : "raw codec probe for diagnostics",
   ].join(" · ");
 
   return (
-    <div className="app" data-runtime={runtime.kind} data-view={view}>
+    <div className="app" data-runtime={kind} data-view={view}>
       <TopBar
         brandHref={websiteHome ? "/" : null}
         steps={steps}
@@ -1173,15 +1261,12 @@ function RuntimeApp({
           <>
             <p className="about-lede">
               Audivane ABX compares two codec chains from one local audio file
-              in a blind A/B/X test.{" "}
-              {desktop
-                ? "Preparation and playback run on this computer with native codecs."
-                : "Preparation and playback run in this browser with local WASM codecs."}{" "}
-              Audio is never uploaded.
+              in a blind A/B/X test. Preparation and playback run in this
+              browser with local WASM codecs. Audio is never uploaded.
             </p>
             <dl className="facts">
               <dt>Runtime</dt>
-              <dd>{desktop ? "Desktop native" : "Browser local"}</dd>
+              <dd>Browser local</dd>
               <dt>Source</dt>
               <dd>
                 <a
@@ -1193,7 +1278,7 @@ function RuntimeApp({
                 </a>
               </dd>
             </dl>
-            <CapabilitiesPanel state={capabilities} kind={runtime.kind} />
+            <CapabilitiesPanel state={capabilities} />
           </>
         }
       />
@@ -1233,10 +1318,60 @@ function RuntimeApp({
               test to edit them.
             </p>
           )}
+          {sharedBanner !== null && !listeningLocksLab ? (
+            <div
+              className={`share-banner ${sharedBanner.kind === "ok" ? "notice" : "status-error"}`}
+              role={sharedBanner.kind === "ok" ? "note" : "alert"}
+            >
+              <div className="share-banner-copy">
+                {sharedBanner.kind === "ok" ? (
+                  <>
+                    <p>
+                      <strong>Shared test:</strong>{" "}
+                      {sharedTestSummary(sharedBanner.test)}
+                      {sharedEdited ? " (edited)" : ""}
+                    </p>
+                    {sharedHint !== null ? (
+                      <p className="field-note">
+                        Sharer&apos;s file: {sharedHint.title}
+                        {sharedHint.durationSeconds !== undefined
+                          ? ` (${formatLength(sharedHint.durationSeconds)})`
+                          : ""}
+                      </p>
+                    ) : null}
+                    {capabilities.status === "ready" && unavailableStages.length > 0 ? (
+                      <p className="share-banner-block">
+                        {unavailableStages
+                          .map(
+                            (entry) =>
+                              `${CODEC_CATALOG[entry.codecId].displayName} (side ${entry.side.toUpperCase()}, stage ${entry.index + 1})`,
+                          )
+                          .join(", ")}{" "}
+                        {unavailableStages.length === 1 ? "does" : "do"} not
+                        work in this browser, so this test cannot be prepared
+                        here.
+                      </p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p>
+                    <strong>This test link could not be opened.</strong>{" "}
+                    {sharedBanner.reason}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                className="ghost small"
+                onClick={clearSharedTest}
+              >
+                {sharedBanner.kind === "ok" ? "Clear" : "Dismiss"}
+              </button>
+            </div>
+          ) : null}
           <div className="setup-grid">
             <div className="setup-main">
               <SourceCard
-                desktop={desktop}
                 name={selectedName}
                 sizeBytes={selectedSize}
                 prepared={preparedFacts}
@@ -1247,9 +1382,8 @@ function RuntimeApp({
                 onSelectFile={selectFile}
                 onDropFile={(file) => {
                   if (listeningLocksLab || controlsDisabled) return;
-                  void chooseSource({ kind: "file", file });
+                  void chooseSource(file);
                 }}
-                onChooseDesktopSource={() => void chooseDesktopSource()}
               />
 
               <section className="card chain-board" aria-labelledby="config-heading">
@@ -1283,9 +1417,8 @@ function RuntimeApp({
                 </div>
                 {!preparationModeSupported && (
                   <p className="status-error" role="alert">
-                    This {desktop ? "desktop" : "browser"} build does not
-                    advertise the selected manual preparation policy; no silent
-                    fallback is applied.
+                    This build does not advertise the selected manual
+                    preparation policy; no silent fallback is applied.
                   </p>
                 )}
                 {unavailableSelection ? (
@@ -1321,74 +1454,44 @@ function RuntimeApp({
                       the selected rate.
                     </p>
                   </fieldset>
-                  {desktop ? (
+                  <fieldset className="field-group" disabled={controlsDisabled}>
+                    <legend>Manual preparation policy</legend>
+                    <div className="field">
+                      <label htmlFor="preparation-policy">
+                        Delivery processing
+                      </label>
+                      <select
+                        id="preparation-policy"
+                        value={preparationMode}
+                        onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+                          const next = event.target
+                            .value as BrowserPreparationMode;
+                          setPreparationMode(next);
+                          setModeNotice(
+                            next === "codec-probe-only" && calibrationEnabled
+                              ? "Raw manual preparation cannot generate the readiness check. Prepare test still uses aligned preparation; turn the readiness check off or choose aligned for manual diagnostics."
+                              : null,
+                          );
+                        }}
+                      >
+                        <option value="codec-probe-only">
+                          {PREPARATION_MODE_LABELS["codec-probe-only"]}
+                        </option>
+                        <option value="aligned-gain-matched-v1">
+                          {PREPARATION_MODE_LABELS["aligned-gain-matched-v1"]}
+                        </option>
+                      </select>
+                    </div>
                     <details className="disclosure-inline">
-                      <summary>Native preparation policy details</summary>
-                      <dl className="facts">
-                        <dt>Policy</dt>
-                        <dd>
-                          <code>aligned-gain-matched-v1</code>
-                        </dd>
-                        <dt>Engine</dt>
-                        <dd>
-                          <code>engine-native-typescript</code>
-                        </dd>
-                        <dt>Runtime</dt>
-                        <dd>
-                          Electron main process private worker with direct
-                          native FFmpeg
-                        </dd>
-                      </dl>
+                      <summary>Policy difference</summary>
                       <p className="field-note">
-                        Raw codec-probe-only and unsupported policies are
-                        refused before source reads, probes or subprocesses. The
-                        applied crop/gains/trim and final-byte measurements come
-                        from this shared policy; no fallback or relabelling is
-                        applied.
+                        Raw mode keeps the codec-stage WAV and measures it.
+                        Prepared mode applies alignment, independent gains and
+                        one common peak trim in a dedicated worker, then
+                        measures the final serialized bytes.
                       </p>
                     </details>
-                  ) : (
-                    <fieldset className="field-group" disabled={controlsDisabled}>
-                      <legend>Manual preparation policy</legend>
-                      <div className="field">
-                        <label htmlFor="preparation-policy">
-                          Delivery processing
-                        </label>
-                        <select
-                          id="preparation-policy"
-                          value={preparationMode}
-                          onChange={(event: ChangeEvent<HTMLSelectElement>) => {
-                            const next = event.target
-                              .value as BrowserPreparationMode;
-                            setPreparationMode(next);
-                            setModeNotice(
-                              next === "codec-probe-only" && calibrationEnabled
-                                ? "Raw manual preparation cannot generate the readiness check. Prepare test still uses aligned preparation; turn the readiness check off or choose aligned for manual diagnostics."
-                                : null,
-                            );
-                          }}
-                        >
-                          <option value="codec-probe-only">
-                            {PREPARATION_MODE_LABELS["codec-probe-only"]}
-                          </option>
-                          <option value="aligned-gain-matched-v1">
-                            {PREPARATION_MODE_LABELS["aligned-gain-matched-v1"]}
-                          </option>
-                        </select>
-                      </div>
-                      <details className="disclosure-inline">
-                        <summary>Policy difference</summary>
-                        <p className="field-note">
-                          Raw mode keeps the codec-stage WAV and measures it.
-                          Prepared mode applies alignment, independent gains and
-                          one common peak trim in a dedicated worker, then
-                          measures the final serialized bytes. The desktop
-                          native worker applies the same shared policy with
-                          native codecs.
-                        </p>
-                      </details>
-                    </fieldset>
-                  )}
+                  </fieldset>
                   {modeNotice ? (
                     <p className="field-note" role="status">
                       {modeNotice}
@@ -1410,9 +1513,7 @@ function RuntimeApp({
                         disabled={!manualCanPrepare}
                         onClick={beginPrepare}
                       >
-                        {desktop
-                          ? "Prepare native artifacts"
-                          : "Prepare diagnostic artifacts"}
+                        Prepare diagnostic artifacts
                       </button>
                       {status === "preparing" && !prepareTestBusy ? (
                         <button
@@ -1448,25 +1549,15 @@ function RuntimeApp({
                         </>
                       ) : status === "cancelling" ? (
                         <strong>
-                          Cancelling and waiting for{" "}
-                          {desktop
-                            ? "main-owned native child cleanup"
-                            : "WASM worker termination"}
-                          …
+                          Cancelling and waiting for WASM worker termination…
                         </strong>
                       ) : status === "cancelled" ? (
                         <>
-                          <strong>Cancelled.</strong>{" "}
-                          {desktop
-                            ? "Main-owned child processes and temporary files were cleaned up; retry is safe."
-                            : "Worker terminated and temporary files removed; retry is safe."}
+                          <strong>Cancelled.</strong> Worker terminated and
+                          temporary files removed; retry is safe.
                         </>
                       ) : status === "complete" ? (
-                        <strong>
-                          {desktop
-                            ? "Native artifacts ready."
-                            : "Diagnostic artifacts ready."}
-                        </strong>
+                        <strong>Diagnostic artifacts ready.</strong>
                       ) : status === "error" ? (
                         <strong>Preparation failed.</strong>
                       ) : null}
@@ -1566,6 +1657,17 @@ function RuntimeApp({
                   </p>
                 </div>
               )}
+              {shareSetup !== null ? (
+                <button
+                  type="button"
+                  className="quiet small share-setup"
+                  onClick={() =>
+                    setShareRequest({ setup: shareSetup, copyOnOpen: true })
+                  }
+                >
+                  Copy test link
+                </button>
+              ) : null}
             </aside>
           </div>
         </section>
@@ -1583,7 +1685,6 @@ function RuntimeApp({
                 : null
             }
             listening={listening}
-            runtimeKind={runtime.kind}
             active={view === "listen"}
             tally={tally}
             primary={{
@@ -1681,6 +1782,13 @@ function RuntimeApp({
           )}
           {view === "evidence" && artifact !== null && runActions}
         </section>
+
+        <ShareDialog
+          request={shareRequest}
+          source={source}
+          sourceSeconds={preparedFacts?.seconds ?? null}
+          onClose={() => setShareRequest(null)}
+        />
 
         <footer className="app-footer">
           <span>Audivane ABX</span>

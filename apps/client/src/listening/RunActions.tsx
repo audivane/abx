@@ -10,6 +10,8 @@ export interface RunActionsProps {
   readonly onReset: () => void;
   /** Close the run and return to an unlocked Setup (existing close). */
   readonly onClose: () => void;
+  /** Opens the share dialog for this setup; absent when it cannot be shared. */
+  readonly onShare?: () => void;
   /** Present only when clearing is possible (no run holds the audio). */
   readonly clear: { readonly disabled: boolean; readonly onClear: () => void } | null;
 }
@@ -26,6 +28,11 @@ export function RunActions(props: RunActionsProps): JSX.Element {
       >
         Download results
       </button>
+      {props.onShare ? (
+        <button type="button" className="ghost" onClick={props.onShare}>
+          Share this test
+        </button>
+      ) : null}
       {props.hasRun ? (
         <>
           <button

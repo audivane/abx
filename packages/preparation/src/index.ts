@@ -7,7 +7,7 @@ export interface PrepareOptions {
 }
 
 /**
- * Local source types stay inside adapters: a File in-browser, a path on desktop.
+ * Local source types stay inside adapters: the browser passes a File.
  * No audio data is sent over JSON. One active job per engine instance initially.
  * Reject concurrent work. An aborted prepare rejects only AFTER owned workers,
  * subprocesses and partial outputs have been cleaned up. Release is idempotent.

@@ -128,9 +128,9 @@ export function isRawCodecProbeArtifact(
 }
 
 /**
- * The listening flow accepts the browser shared prepared pair or the native
- * shared prepared pair. Raw/unsupported artifacts are refused with a concrete
- * remediation; there is no engine switch.
+ * The listening flow accepts the browser shared prepared pair. Raw or
+ * unsupported artifacts are refused with a concrete remediation; there is no
+ * engine switch.
  */
 export function listeningArtifactEligibility(
   artifact: PreparedArtifact | null | undefined,
@@ -172,32 +172,10 @@ export function listeningArtifactEligibility(
   if (artifact.validity.preparationGate.policy !== "preparation-validity-v2") {
     return "This preparation gate is historical. Re-prepare with the current engine before scored listening.";
   }
-  if (artifact.engine.location === "desktop-native") {
-    if (
-      artifact.engine.engineId !== "engine-native-typescript" ||
-      artifact.request.preparationPolicy !== "aligned-gain-matched-v1" ||
-      artifact.preparation?.policy !== "aligned-gain-matched-v1" ||
-      artifact.measurements.policy !== "aligned-gain-matched-v1"
-    ) {
-      return (
-        "The desktop listening flow requires the actual shared aligned-gain-matched-v1 " +
-        "artifact from the native TypeScript engine (engine-native-typescript). " +
-        "This artifact is raw or labels an unsupported engine/policy. " +
-        "Prepare it again with the current native shared-preparation engine; no fallback or relabelling is applied."
-      );
-    }
-    if (!artifact.measurements.delivered) {
-      return (
-        "The native artifact is missing the delivered-pair measurement report required " +
-        "for the listening bind; prepare it again with the current native engine."
-      );
-    }
-    return null;
-  }
   if (artifact.engine.location !== "browser-local") {
     return (
-      "This listening flow accepts browser-local shared preparation or explicit native " +
-      "delivered evidence. Optional-server artifacts are unsupported; no engine switch is performed."
+      "This listening flow accepts browser-local shared preparation only. " +
+      "Optional-server artifacts are unsupported; no engine switch is performed."
     );
   }
   const preparedPolicy = artifact.preparation?.policy ?? null;
@@ -226,16 +204,11 @@ export function listeningArtifactEligibility(
  * user must reprepare with canary material or explicitly turn calibration off.
  */
 export function calibrationMaterialAdvice(artifact: PreparedArtifact): string | null {
-  const native = artifact.engine.location === "desktop-native";
   const canary = artifact.canary;
   if (!canary) {
-    return native
-      ? "Calibration is ON but this native artifact contains no delivered canary material. " +
-          "Prepare again with the optional native canary enabled, " +
-          "or explicitly disable calibration. It is never disabled automatically."
-      : "Calibration is ON but this artifact contains no canary material. " +
-          "Prepare again with “Generate canary material” enabled (aligned-gain-matched-v1 only), " +
-          "or explicitly disable calibration. It is never disabled automatically.";
+    return "Calibration is ON but this artifact contains no canary material. " +
+      "Prepare again with “Generate canary material” enabled (aligned-gain-matched-v1 only), " +
+      "or explicitly disable calibration. It is never disabled automatically.";
   }
   if (!canary.report.usable || canary.audio === null) {
     return (

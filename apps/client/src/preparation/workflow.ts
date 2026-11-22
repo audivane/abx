@@ -71,8 +71,6 @@ export interface PrepareTestEngine<Source, Artifact extends PreparedArtifact> {
 }
 
 export interface PrepareTestWorkflowDeps<Source, Artifact extends PreparedArtifact> {
-  /** Runtime label only: start messages and the raw/browser readiness conflict. */
-  readonly desktop: boolean;
   readonly engine: PrepareTestEngine<Source, Artifact>;
   /** The listening collaborator; the workflow never merges its run state. */
   readonly controller: ListeningController;
@@ -136,32 +134,28 @@ function captureInputs(inputs: PrepareTestInputs): PrepareTestInputs {
 
 /**
  * One explicit prepare-test workflow: aligned preparation, exact-byte bind and
- * paused trial-1 staging.
- *
- * This module owns the sequence and its races so React only renders state and
- * submits current form values:
+ * paused trial-1 staging. It owns the sequence and its races so React only
+ * renders state and submits current form values:
  *
  * - Input identity is captured at command entry; same-input completion is
- *   remembered and reused, any source/codec/rate/opt-in change invalidates it.
+ *   reused, while any source, codec, rate or opt-in change invalidates it.
  * - The retained artifact stays with {@link PreparationLifecycle}; reuse asks
- *   that owner for publishable completed material, so cleanup-only ownership
- *   after a failed release can never be reused.
+ *   that owner for publishable material, so cleanup-only ownership after a
+ *   failed release can never be reused.
  * - Cancellation invalidates the run first, then cancels preparation or closes
- *   the listening session. Late preparation, bind and stage results are never
- *   published; the controller invalidates old operations when Cancel closes the
- *   session, so an old completion cannot close a replacement run.
- * - A configured binding refusal is reported without staging; running the same
- *   captured inputs again retries the bind against the retained pair.
- * - `prepareDiagnostic` retains the advanced manual path: it releases the old
- *   artifact, prepares, and registers the pair only when that request was
- *   aligned. It never creates a listening session.
- * - `dispose` attempts every cleanup owner in order: listening controller,
- *   preparation lifecycle, preparation engine. Failures are reported, never
- *   presented as completed cleanup.
+ *   the listening session; late results are never published, and an old
+ *   completion cannot close a replacement run.
+ * - A configured binding refusal is reported without staging; the same captured
+ *   inputs retry the bind against the retained pair.
+ * - `prepareDiagnostic` is the advanced manual path: it never creates a
+ *   listening session and registers the pair only for an aligned request.
+ * - `dispose` attempts every cleanup owner in order (listening controller,
+ *   preparation lifecycle, preparation engine) and reports failures rather
+ *   than presenting them as completed cleanup.
  *
  * The listening controller stays the owner of plan/run/playback state; this
- * workflow only calls `prepareSession`, `start` and `closeSession` in sequence.
- * It never plays audio: staging leaves the first trial paused.
+ * workflow only calls `prepareSession`, `start` and `closeSession` in sequence
+ * and never plays audio.
  */
 export class PrepareTestWorkflow<
   Source,
@@ -261,7 +255,7 @@ export class PrepareTestWorkflow<
     if (this.#deps.controller.state.session !== "idle") return;
     if (this.lifecycle.state.source === null) return;
     if (inputs.diagnosticPolicy === "codec-probe-only" &&
-      inputs.calibrationEnabled && !this.#deps.desktop) {
+      inputs.calibrationEnabled) {
       return;
     }
     const captured = captureInputs(inputs);
@@ -511,11 +505,9 @@ export class PrepareTestWorkflow<
   #progress(mode: PrepareTestRequestMode): PreparationProgress {
     return {
       phase: "loading",
-      message: this.#deps.desktop
-        ? "Starting native desktop preparation via the main process’s private worker"
-        : mode === "prepare-test"
-          ? "Starting browser-local aligned preparation"
-          : "Starting browser-local preparation",
+      message: mode === "prepare-test"
+        ? "Starting browser-local aligned preparation"
+        : "Starting browser-local preparation",
     };
   }
 }

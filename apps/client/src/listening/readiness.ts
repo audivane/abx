@@ -18,14 +18,13 @@ export interface TrialStartGateBlocker {
 
 /**
  * The client gate decision shared by the rendered Start control and the
- * listening controller. It deliberately covers only facts carried by the bound
- * snapshot and artifact: async lifecycle/busy/lock state stays with the
- * controller, and dirty or invalid form fields stay with the view.
+ * listening controller. It covers only facts carried by the bound snapshot and
+ * artifact: async lifecycle/busy/lock state stays with the controller, and
+ * dirty or invalid form fields stay with the view.
  *
- * Callers must still treat the run authority as authoritative; this predicate
- * prevents an enabled control from promising a start the controller refuses.
- * Its refusal order preserves the client controller's existing messages; the
- * authority independently enforces its own checks against exact served bytes.
+ * This only stops an enabled control promising a start the controller refuses;
+ * the run authority independently enforces its own checks against the exact
+ * served bytes.
  */
 export function trialStartGateBlocker(
   snapshot: ExperimentSnapshot,

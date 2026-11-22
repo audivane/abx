@@ -8,7 +8,7 @@ requests are all welcome.
 Open an [issue](https://github.com/audivane/abx/issues) with:
 
 - what you did, what you expected and what happened;
-- browser or desktop, with OS and version (and browser name);
+- browser name and version, with OS and version;
 - the source file's format, rate and length, plus the codec settings for both sides;
 - if you can, the results download (it holds the preparation record).
 
@@ -26,9 +26,8 @@ Security problems: see [SECURITY.md](SECURITY.md) instead of opening an issue.
    npm run verify:quick
    ```
 
-   [Development](docs/development.md) and the
-   [verification workflow](docs/verification-workflow.md) cover desktop
-   builds, native codecs and the full suites.
+   [Development](docs/development.md) covers the browser build, codec modules,
+   the full suite and the profiling and capture lanes.
 
 ## Contributor License Agreement
 

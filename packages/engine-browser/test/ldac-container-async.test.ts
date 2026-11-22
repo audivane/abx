@@ -1,16 +1,12 @@
 /**
- * Artifact-free bounded-async behavior of the LDAC container module.
+ * Artifact-free bounded-async behavior of the LDAC container module: no WASM
+ * module and no native helper.
  *
- * These checks need no WASM module and no native helper. They establish:
- * - `writeLdacContainerAsync`/`parseLdacContainerAsync` are byte-exact and
- *   reason-order-identical with the synchronous `writeLdacContainer`/
- *   `parseLdacContainer`, which must stay usable for the existing callers;
- * - the async variants remain correct independently of each other and of the
- *   synchronous implementation (independent hand assembly, zlib CRC-32 as an
- *   independent checksum authority, and cross-parse round trips);
- * - large work actually yields the event loop, reports incremental progress
- *   and honors cancellation (heartbeat counters and structural slice
- *   accounting — never a wall-clock performance threshold).
+ * The async writer and parser must be byte-exact and reason-order identical to
+ * the synchronous pair, stay correct independently of it (hand assembly, zlib
+ * CRC-32 as an independent authority, cross-parse round trips), and really
+ * yield: incremental progress and cancellation are asserted through heartbeat
+ * counters and slice accounting, never a wall-clock threshold.
  */
 
 import assert from "node:assert/strict";

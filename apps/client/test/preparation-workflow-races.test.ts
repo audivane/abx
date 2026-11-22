@@ -39,25 +39,19 @@ import {
 /*
  * Controlled race regressions for the client preparation workflow.
  *
- * These cross the real `PrepareTestWorkflow` interface, the real
- * `PreparationLifecycle` it constructs internally, and a real
- * `ListeningController`. The authority side is a real `ExperimentService` bound
- * to genuine delivered-validity-v2 fixture bytes, so binding refusals and
- * snapshot facts come from production validation rather than forged snapshots.
- * Only the player and the preparation engine (which stand in for the browser
- * Worker/native process) are adapters.
+ * These cross the real `PrepareTestWorkflow`, the real `PreparationLifecycle`
+ * it constructs, and a real `ListeningController`. Authority is a real
+ * `ExperimentService` bound to delivered-validity-v2 fixture bytes, so binding
+ * refusals and snapshot facts come from production validation rather than
+ * forged snapshots; only the player and preparation engine are adapters.
  *
- * Expectations describe intended workflow semantics. Where the current module
- * differs, the workflow owner should fix production; these cases should not be
- * relaxed to mirror a race that drops a run, strands `busy` or closes a
- * replacement session.
- *
- * Unreachable combinations are not simulated. In particular, a preparation
- * cannot be in flight while a listening run owns the retained artifact:
- * `PreparationLifecycle` refuses while the listening lock is held. The disposal
- * case therefore holds preparation while the controller owns a player created
- * through idle output discovery, which is the reachable controller→lifecycle→
- * engine ordering.
+ * These expectations are intended semantics: fix production rather than
+ * relaxing a case to mirror a race that drops a run, strands `busy` or closes a
+ * replacement session. Unreachable combinations are not simulated: preparation
+ * cannot be in flight while a listening run owns the retained artifact because
+ * `PreparationLifecycle` refuses while the listening lock is held, so the
+ * disposal case holds preparation while the controller owns a player created
+ * through idle output discovery.
  */
 
 const SOURCE = "fixture-source-1";
@@ -400,7 +394,6 @@ async function harness(): Promise<Harness> {
   });
 
   const workflow = new PrepareTestWorkflow<string, PreparedArtifact>({
-    desktop: false,
     engine,
     controller,
     readers: readers.readers,

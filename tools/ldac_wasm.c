@@ -1,8 +1,8 @@
 /*
  * ldac_wasm.c -- supplemental LDAC codec glue for the browser engine.
  *
- * In-memory port of tools/ldac_helper.c (the native desktop tier's helper is
- * compiled separately). Identical integer behavior: container v1 framing (the
+ * Standalone in-memory LDAC glue for the browser WASM module (the former
+ * native helper is archived). Identical integer behavior: container v1 framing (the
  * 48-byte LE header and CRC live engine-side in TS,
  * packages/engine-browser/src/ldac-container.ts), MQ/SQ/HQ encoder modes from
  * pinned AOSP libldac 2.00.02, 128-sample LSU blocks, and the per-frame

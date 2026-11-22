@@ -1,7 +1,7 @@
 /*
  * Bounded fault-injection lifecycle harness for tools/ldac_wasm.c.
  *
- * Scope (finding P2 at tools/ldac_wasm.c lines 133-140, baseline 9cf30ab):
+ * Scope:
  *   - every ldac_wasm_encoder_new construction failure path must release the
  *     packet buffer, the 8192-byte pending buffer and the session struct,
  *     plus the libldac handle once it was acquired;

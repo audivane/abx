@@ -14,18 +14,17 @@ const LDAC_RECORD_PREFIX_BYTES = 2;
  *
  * - libldac quality modes differ from the requested stereo bitrate: mono uses
  *   the documented half-stereo rates 165/330/495 kbps for 330/660/990 at
- *   48 kHz, and 44.1 kHz stereo uses libldac's internal 303/606/909 (both
- *   documented in `tools/ldac_helper.c` and the native executor policy).
+ *   48 kHz, and 44.1 kHz stereo uses libldac's internal 303/606/909 (recorded
+ *   in the browser engine's disclosed rate policy).
  * - One transport frame is ceil(base bytes per 128-sample frame) bytes long;
  *   libldac accounts its 3-byte frame header inside that budget. Each record
  *   adds a u16 length prefix, and the fixed 48-byte container header precedes
  *   all records.
- * - The helper pads the final partial 128-sample block and its flush loop
+ * - The encoder pads the final partial 128-sample block and its flush loop
  *   appends one encoder-tail frame, so `frameCount` is
- *   ceil(sampleCount / 128) + 1 (verified against native ldac_helper output by
- *   the supplemental parity tests).
+ *   ceil(sampleCount / 128) + 1 (checked against the browser WASM e2e).
  *
- * Mono at 44.1 kHz is not part of either tier's encode policy and throws
+ * Mono at 44.1 kHz is outside the encode policy and throws
  * instead of guessing a rate.
  */
 export interface LdacContainerRateExpectation {

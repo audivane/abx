@@ -1,19 +1,14 @@
 /**
  * Construction-failure allocation custody for the four supplemental session
- * factories, entirely without the built WASM artifacts (a structural fake
- * loader hands the factories a recording fake module).
+ * factories, without the built WASM artifacts: a structural fake loader hands
+ * them a recording fake module.
  *
- * Contract under test: every acquired scratch/input/output heap pointer and
- * the codec handle are freed EXACTLY ONCE when construction fails, for both
- * fault-injected zero-returning and throwing `_malloc`/constructor calls,
- * while the normal success path keeps its exact bytes and its normal dispose.
- *
- * Before the fix, a failed second-buffer malloc leaked the first buffer, a
- * failed first-buffer malloc leaked the second (or leaked it when the second
- * failed after the first), and a throwing codec-handle constructor leaked the
- * meta scratch pointer. Every pointer is unique (bump-allocated), so
- * "free <pointer>" appearing exactly once per acquired pointer proves nothing
- * leaked and nothing was double-freed.
+ * Contract: every acquired scratch/input/output heap pointer and the codec
+ * handle is freed exactly once when construction fails, for fault-injected
+ * zero-returning and throwing `_malloc`/constructor calls, while the success
+ * path keeps its bytes and normal dispose. Pointers are bump-allocated and
+ * unique, so one `free <pointer>` per acquired pointer proves neither a leak
+ * nor a double free.
  */
 import assert from "node:assert/strict";
 import test from "node:test";
