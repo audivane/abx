@@ -106,5 +106,6 @@ export function resultExplanation(snapshot: ExperimentSnapshot): string {
         : "";
     return `${got} ${chance}. That is below your planned threshold of α ${alpha}, so this run meets the test's rule for a significant result.${lenient} It is evidence from one run on this setup, not a certification of either codec or of audibility elsewhere.`;
   }
-  return `${got} ${chance}, so this result can't be told apart from chance at α ${alpha}. That doesn't prove the two sides sound identical: a longer test can detect smaller differences.`;
+  // A final non-significant run shows only its heading.
+  return "";
 }

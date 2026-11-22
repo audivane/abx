@@ -201,16 +201,11 @@ test("the chance wording is derived from the computed p-value", () => {
   assert.equal(describeChance(1), "every time or nearly so");
 });
 
-test("a non-significant final result reads the real numbers and does not claim the sides are identical", () => {
+test("a non-significant final result shows only its heading", () => {
   const value = snapshot({ correct: 5, scored: 8, planned: 8 });
   assert.equal(resultHeading(value), "No significant difference detected");
   assert.equal(resultKicker(value), "Test complete · 8 of 8 trials");
-  const text = resultExplanation(value);
-  assert.match(text, /^You got 5 of 8 right\. Guessing alone scores 5 or more about 36% of the time/);
-  assert.match(text, /can't be told apart from chance at α 0\.05/);
-  assert.match(text, /doesn't prove the two sides sound identical/);
-  // The same counts at a looser α change only what the threshold says.
-  assert.match(resultExplanation(snapshot({ correct: 5, scored: 8, planned: 8, alpha: 0.4, significant: false })), /at α 0\.4/);
+  assert.equal(resultExplanation(value), "");
 });
 
 test("a significant final result is evidence from this run, not a certification", () => {

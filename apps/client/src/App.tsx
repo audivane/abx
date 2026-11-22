@@ -1435,11 +1435,11 @@ function RuntimeApp({
                 </summary>
                 <div className="advanced-body">
                   <fieldset className="field-group" disabled={controlsDisabled}>
-                    <legend>Delivery rate</legend>
+                    <legend>Final sample rate</legend>
                     <div className="field">
-                      <label htmlFor="rate-mode">Sample-rate policy</label>
                       <select
                         id="rate-mode"
+                        aria-label="Final sample rate"
                         value={rateMode}
                         onChange={(event: ChangeEvent<HTMLSelectElement>) => {
                           setRateMode(event.target.value as SampleRateMode);
@@ -1449,19 +1449,13 @@ function RuntimeApp({
                         <option value="force_48k">Force 48 kHz delivery</option>
                       </select>
                     </div>
-                    <p className="field-note">
-                      Opus encodes at 48 kHz internally; final delivery follows
-                      the selected rate.
-                    </p>
                   </fieldset>
                   <fieldset className="field-group" disabled={controlsDisabled}>
                     <legend>Manual preparation policy</legend>
                     <div className="field">
-                      <label htmlFor="preparation-policy">
-                        Delivery processing
-                      </label>
                       <select
                         id="preparation-policy"
+                        aria-label="Manual preparation policy"
                         value={preparationMode}
                         onChange={(event: ChangeEvent<HTMLSelectElement>) => {
                           const next = event.target
@@ -1498,11 +1492,9 @@ function RuntimeApp({
                     </p>
                   ) : null}
                   <div className="prepare-bar">
-                    <p className="field-note">
-                      Diagnostic artifacts prepare and measure both sides
-                      without starting a listening test.
-                      {!source ? " Choose a source file first." : ""}
-                    </p>
+                    {!source ? (
+                      <p className="field-note">Choose a source file first.</p>
+                    ) : null}
                     {manualPrepareBlockedReason ? (
                       <p className="field-note">{manualPrepareBlockedReason}</p>
                     ) : null}

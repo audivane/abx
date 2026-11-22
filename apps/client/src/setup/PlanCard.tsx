@@ -165,10 +165,6 @@ export function PlanCard(props: {
             </select>
           </div>
         </div>
-        <p className="field-note">
-          The plan locks at the first staged trial. Calibration is excluded
-          from scored N.
-        </p>
       </details>
       {props.error ? (
         <p className="status-error" role="alert">

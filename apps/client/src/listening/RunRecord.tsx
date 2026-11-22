@@ -39,6 +39,7 @@ export function RunRecord(props: {
 }): JSX.Element {
   const { statistics: stats, gates, plan } = props.snapshot;
   const outcome = runOutcome(props.snapshot);
+  const explanation = resultExplanation(props.snapshot);
   return (
     <section
       className="run-record"
@@ -52,7 +53,7 @@ export function RunRecord(props: {
           <h2 id="run-record-heading" className="display">
             {resultHeading(props.snapshot)}
           </h2>
-          <p className="verdict-text">{resultExplanation(props.snapshot)}</p>
+          {explanation ? <p className="verdict-text">{explanation}</p> : null}
         </div>
         {props.tally && props.tally.length > 0 ? (
           <TrialTally rows={props.tally} />

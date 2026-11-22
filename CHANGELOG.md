@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 (2026-11-22)
+
+Less helper text in the app.
+
+- Setup: the test plan card and the advanced panel drop their explanatory
+  notes; the sample-rate setting is now called Final sample rate.
+- Share dialog: one sentence for the link note and for the file-name option.
+- Results: a non-significant result shows only its heading.
+
 ## 1.1.0 (2026-11-22)
 
 Audivane ABX is browser-only from this release.

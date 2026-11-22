@@ -135,8 +135,7 @@ export function ShareDialog(props: {
           </div>
           <p className="share-summary">{sharedTestSummary(request.setup)}</p>
           <p className="field-note">
-            The link holds the codec settings and test plan. Your audio and
-            results stay on this device. Others choose their own file.
+            The link holds the codec settings and test plan.
           </p>
           <div className="share-link">
             <input
@@ -168,8 +167,7 @@ export function ShareDialog(props: {
               <span>
                 Include file name
                 <small>
-                  Adds the file name and length so others know which track you
-                  used. The file itself is not shared.
+                  Adds the file name and length; the file itself isn't shared.
                 </small>
               </span>
             </label>
