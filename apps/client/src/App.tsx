@@ -129,7 +129,7 @@ const DEFAULT_STAGES_A: readonly CodecSelection[] = Object.freeze([
   Object.freeze({ codecId: "noop_passthrough" as const, bitrateKbps: 0 }),
 ]);
 const DEFAULT_STAGES_B: readonly CodecSelection[] = Object.freeze([
-  Object.freeze({ codecId: "opus" as const, bitrateKbps: 128 }),
+  Object.freeze({ codecId: "aac" as const, bitrateKbps: 128 }),
 ]);
 const DEFAULT_PLAN_FIELDS: PlanFormFields = Object.freeze({
   plannedTrials: String(LISTENING_DEFAULTS.plannedTrials),
@@ -1240,8 +1240,8 @@ function RuntimeApp({
             : null;
 
   const limitLine = caps
-    ? `Up to ${Math.floor(caps.maxDurationSeconds / 60)} min · ${Math.round(caps.maxInputBytes / (1024 * 1024))} MiB · 32-bit input`
-    : "Up to 30 min · 512 MiB · 32-bit input";
+    ? `Up to ${Math.floor(caps.maxDurationSeconds / 60)} min · ${Math.round(caps.maxInputBytes / (1024 * 1024))} MiB · 32-bit file`
+    : "Up to 30 min · 512 MiB · 32-bit file";
   const advancedSummary = [
     rateMode === "native" ? "Native source rate" : "48 kHz delivery",
     preparationMode === "aligned-gain-matched-v1"
@@ -1262,7 +1262,7 @@ function RuntimeApp({
             <p className="about-lede">
               Audivane ABX compares two codec chains from one local audio file
               in a blind A/B/X test. Preparation and playback run in this
-              browser with local WASM codecs. Audio is never uploaded.
+              browser with local WASM codecs. Audio is never uploaded to any server.
             </p>
             <dl className="facts">
               <dt>Runtime</dt>

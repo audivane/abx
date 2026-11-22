@@ -321,7 +321,7 @@ test("before a test is prepared Listen is locked, source and codec edits keep Se
   };
   const before = await documentTop();
   await page.locator(".listening-test-plan > summary").click();
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("9");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("9");
   await page.locator(".listening-test-plan > summary").click();
   expect(Math.abs(await documentTop() - before)).toBeLessThanOrEqual(2);
 

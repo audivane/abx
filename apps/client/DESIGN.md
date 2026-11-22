@@ -3,7 +3,7 @@
 ## Design contract
 
 Guided mode. The approved reference is the November 2026 redesign mockup
-(copper accent). The interface is a three-step flow — Setup, Listen, Results —
+(DSP blue accent). The interface is a three-step flow — Setup, Listen, Results —
 in one centred column. It is a presentation layer only: do not change the test
 method, scoring, gating, preparation, evidence or export contracts to simplify
 the UI.
@@ -34,13 +34,13 @@ values, not by importing across repositories.
 Light is warm paper, shared with the website and DSP: `--bg #f5f3ee`,
 `--panel #fffdf9`, `--panel-2 #f0ece4`, warm greys for lines and text.
 
-The accent is copper:
+The accent is DSP's blue, copied from the DSP skins:
 
 | Skin | `--accent` | `--accent-fg` |
 | --- | --- | --- |
-| Light | `#a9472a` | `#ffffff` |
-| Graphite | `#e3875c` | `#1e1208` |
-| Midnight | `#ef8a5e` | `#1a0e07` |
+| Light | `#2563eb` | `#ffffff` |
+| Graphite | `#5b8def` | `#ffffff` |
+| Midnight | `#4d8dff` | `#ffffff` |
 
 Contrast (WCAG 2.2 AA). Some shared values fail as small text or as a
 control boundary, so the client adds AA-safe roles and uses them for text and
@@ -48,8 +48,9 @@ controls:
 
 - `--subtle` replaces `--faint` for any text (Light `--faint` is 3.2–3.7:1).
   `--faint` is decoration only.
-- `--accent-text` for accent-coloured small text (Light `#93391f`, 6.6:1 on
-  `--bg`).
+- `--accent-text` for accent-coloured small text (Light `#1d4ed8`, 6.0:1 on
+  `--bg`; Graphite `#7fa6f2`; Midnight `#6b9fff`; all ≥4.5:1 on every
+  surface).
 - `--ok-text`, `--warn-text`, `--bad-text` for status words (Light
   `#0e6c42`, `#85560f`, `#b4262b`; Graphite bad `#ff8a8d`; Midnight bad
   `#ff7378`), all ≥4.5:1 on panels and on their soft tints.

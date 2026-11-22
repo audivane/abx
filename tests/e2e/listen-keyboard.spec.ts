@@ -20,7 +20,7 @@ async function startTest(page: Page, trials: number): Promise<void> {
   await chooseWav(page, `keyboard-${trials}.wav`, makePcm16Wav({ sampleRate: 48_000, channels: 1, seconds: 0.8 }));
   await configure(page, { a: "noop_passthrough", b: "opus", bitrateB: 64 });
   await page.locator(".listening-test-plan > summary").click();
-  await page.getByLabel("Planned scored trials N (1–1000)").fill(String(trials));
+  await page.getByLabel("Planned test trials N (1–1000)").fill(String(trials));
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await expect(page.locator(".listening-trial")).toBeVisible({ timeout: 180_000 });
   await expect(page.getByRole("button", { name: "Play", exact: true })).toBeEnabled({ timeout: 60_000 });

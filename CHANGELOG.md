@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.2 (2026-11-22)
+
+DSP's blue in place of the copper accent, and clearer setup.
+
+- Every theme uses DSP's blue accent.
+- Setup: the plan card says "Test trials" and opens with the plan editor
+  expanded; side B starts as AAC 128 kbps; the source card reads "32-bit
+  file".
+- About: audio is never uploaded to any server.
+
 ## 1.1.1 (2026-11-22)
 
 Less helper text in the app.

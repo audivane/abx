@@ -400,11 +400,11 @@ test("fixed and blind perfect-listener runs freeze the plan, stay paused first, 
 
   // --- Plan + bind: default N=8, alpha=.05, blind_random; the single
   // readiness-check switch is explicitly ON for this calibrated run. ---
-  await expect(page.getByLabel("Planned scored trials N (1–1000)")).toHaveValue("8");
+  await expect(page.getByLabel("Planned test trials N (1–1000)")).toHaveValue("8");
   await expect(page.getByLabel("Alpha (strict p < alpha)")).toHaveValue("0.05");
   await expect(page.getByLabel("Label mode", { exact: true })).toHaveValue("blind_random");
   await expect(page.locator("#canary-enabled")).toBeChecked();
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("8");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("8");
   await page.getByLabel("Label mode", { exact: true }).selectOption("fixed");
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await expect(page.locator(".listening-trial")).toBeVisible({
@@ -521,7 +521,7 @@ test("fixed and blind perfect-listener runs freeze the plan, stay paused first, 
   await showView(page, "Listen");
   await clickRunAction(page, NEW_TEST);
   await showView(page, "Setup");
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("1");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("1");
   await page.getByLabel("Label mode", { exact: true }).selectOption("blind_random");
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await waitForReadyTrial(page);
@@ -539,7 +539,7 @@ test("fixed and blind perfect-listener runs freeze the plan, stay paused first, 
   // --- Seal a partially answered run: auditable, terminal, never a final result. ---
   await clickRunAction(page, NEW_TEST);
   await showView(page, "Setup");
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("2");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("2");
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await waitForReadyTrial(page);
   await waitForReadyTrial(page);
@@ -565,7 +565,7 @@ test("fixed and blind perfect-listener runs freeze the plan, stay paused first, 
   // --- Reset + fail calibration -> terminal void, then release to new source. ---
   await clickRunAction(page, NEW_TEST);
   await showView(page, "Setup");
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("1");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("1");
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await waitForReadyTrial(page);
   await waitForReadyTrial(page);
@@ -636,7 +636,7 @@ test("an unusable canary blocks calibration, explicit disable works, load failur
     canary: true,
   });
 
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("4");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("4");
   // Test-only fault at the real measurement-worker boundary: the requested
   // canary report is retained but explicitly unusable. The primary action must
   // fail closed rather than silently turning calibration off.

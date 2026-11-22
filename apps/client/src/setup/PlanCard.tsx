@@ -70,13 +70,11 @@ export function PlanCard(props: {
     <section className="card plan-card" aria-labelledby="plan-heading">
       <div className="card-head">
         <h2 id="plan-heading">Test plan</h2>
-        <span className="card-meta">
-          {props.locked ? "Locked" : "Locks when trial 1 is staged"}
-        </span>
+        {props.locked && <span className="card-meta">Locked</span>}
       </div>
       <dl className="plan-lines">
         <div>
-          <dt>Scored trials</dt>
+          <dt>Test trials</dt>
           <dd className="num">{props.fields.plannedTrials}</dd>
         </div>
         <div>
@@ -113,12 +111,12 @@ export function PlanCard(props: {
           </dd>
         </div>
       </dl>
-      <details className="listening-test-plan">
+      <details className="listening-test-plan" open>
         <summary>Edit plan</summary>
         <div className="plan-fields">
           <div className="field">
             <label htmlFor="plan-trials">
-              Planned scored trials N (1–1000)
+              Planned test trials N (1–1000)
             </label>
             <input
               id="plan-trials"

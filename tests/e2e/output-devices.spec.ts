@@ -154,7 +154,7 @@ test("listening UI refreshes real output support, locks changes after staging, a
     .toHaveCount(chooserExposed ? 1 : 0);
 
   await page.locator("#canary-enabled").uncheck();
-  await page.getByLabel("Planned scored trials N (1–1000)").fill("1");
+  await page.getByLabel("Planned test trials N (1–1000)").fill("1");
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await expect(page.getByRole("button", { name: "Play", exact: true }))
     .toBeEnabled({ timeout: 180_000 });

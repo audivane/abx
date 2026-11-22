@@ -1,6 +1,6 @@
 # Audivane release preparation
 
-Status: **1.1.1, browser-only.** The version is assigned across workspace
+Status: **1.1.2, browser-only.** The version is assigned across workspace
 manifests, internal dependencies, lockfiles and application metadata. Read the
 [changelog](../CHANGELOG.md) for the current notes.
 

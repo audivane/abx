@@ -3,7 +3,7 @@
  * Skins share the DSP app's background, panel, line, text and status values
  * (dsp/app/src/styles/tokens.css): Light, Graphite and Midnight. System
  * resolves to Light or Midnight (workspace/ThemeSwitcher.tsx). The accent is
- * copper. Text-safe variants (--subtle, --accent-text, --ok-text, --warn-text,
+ * DSP blue. Text-safe variants (--subtle, --accent-text, --ok-text, --warn-text,
  * --bad-text) and --control borders exist because some shared values are below
  * WCAG AA as small text or as a control boundary; see apps/client/DESIGN.md.
  */
@@ -72,19 +72,19 @@
   --bad-soft: rgba(209, 52, 56, 0.12);
   --shadow: 0 10px 30px rgba(40, 30, 15, 0.1);
 
-  /* Copper accent. */
-  --accent: #a9472a;
+  /* DSP blue accent. */
+  --accent: #2563eb;
   --accent-fg: #ffffff;
-  --accent-soft: rgba(169, 71, 42, 0.1);
+  --accent-soft: rgba(37, 99, 235, 0.12);
 
   /* AA-safe text and control variants. */
   --subtle: #5f5a50;
-  --accent-text: #93391f;
+  --accent-text: #1d4ed8;
   --ok-text: #0e6c42;
   --warn-text: #85560f;
   --bad-text: #b4262b;
   --control: #8c8475;
-  --focus: #93391f;
+  --focus: #1d4ed8;
 
   --radius: 14px;
   --radius-sm: 9px;
@@ -110,17 +110,17 @@
   --bad-soft: rgba(242, 85, 90, 0.15);
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
 
-  --accent: #e3875c;
-  --accent-fg: #1e1208;
-  --accent-soft: rgba(227, 135, 92, 0.16);
+  --accent: #5b8def;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(91, 141, 239, 0.17);
 
   --subtle: #9a9fa8;
-  --accent-text: #e3875c;
+  --accent-text: #7fa6f2;
   --ok-text: #43c47f;
   --warn-text: #efb34f;
   --bad-text: #ff8a8d;
   --control: #7f838c;
-  --focus: #e3875c;
+  --focus: #7fa6f2;
 }
 
 :root[data-theme="midnight"] {
@@ -142,17 +142,17 @@
   --bad-soft: rgba(255, 92, 98, 0.14);
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
 
-  --accent: #ef8a5e;
-  --accent-fg: #1a0e07;
-  --accent-soft: rgba(239, 138, 94, 0.16);
+  --accent: #4d8dff;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(77, 141, 255, 0.16);
 
   --subtle: #8b98b8;
-  --accent-text: #ef8a5e;
+  --accent-text: #6b9fff;
   --ok-text: #3ccf8e;
   --warn-text: #f0b24a;
   --bad-text: #ff7378;
   --control: #66749a;
-  --focus: #ef8a5e;
+  --focus: #6b9fff;
 }
 
 /* Base */

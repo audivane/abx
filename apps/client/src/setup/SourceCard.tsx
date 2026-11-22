@@ -162,7 +162,7 @@ export function SourceCard(props: {
             </span>
             <b>Drop an audio file here</b>
             <span>
-              or <u>choose a file</u> from this device. It is never uploaded.
+              or <u>choose a file</u> from this device.
             </span>
           </label>
         </>

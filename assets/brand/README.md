@@ -36,7 +36,7 @@ Colors are the shared Audivane surfaces: navy `#0b1020` and paper `#f5f3ee`
 (the Midnight background and the Light background of the apps and website).
 On paper the symbol is navy; on navy it is paper. App icons and favicons are a
 navy tile (edge `#2b3756`) with the paper symbol, so they read on light and
-dark backgrounds alike. Product accents (DSP blue, ABX copper) stay inside the
+dark backgrounds alike. The product accent (blue, shared by DSP and ABX) stays inside the
 apps and are not used in the logo. Audivane DSP's app icon uses its own wave
 glyph in the same tile style (`dsp/assets/brand/audivane-dsp-icon.svg`).
 The wordmark is outlined from the project's IBM Plex Sans Medium font. Its

@@ -1,15 +1,15 @@
 {
   "name": "@codec-abx/client",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "license": "AGPL-3.0-only",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@codec-abx/contracts": "1.1.1",
-    "@codec-abx/engine-browser": "1.1.1",
-    "@codec-abx/experiment-browser": "1.1.1",
-    "@codec-abx/playback": "1.1.1",
-    "@codec-abx/preparation": "1.1.1",
+    "@codec-abx/contracts": "1.1.2",
+    "@codec-abx/engine-browser": "1.1.2",
+    "@codec-abx/experiment-browser": "1.1.2",
+    "@codec-abx/playback": "1.1.2",
+    "@codec-abx/preparation": "1.1.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "uqr": "0.1.3"

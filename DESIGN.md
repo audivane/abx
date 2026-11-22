@@ -11,7 +11,7 @@ configuring A/B and listening the primary path.
   About and diagnostics dialog. Keep actionable errors, ambiguity and session
   locks visible.
 - Offer persisted System, Light, Graphite and Midnight themes sharing the DSP
-  app's colours, with a copper accent. Use self-hosted Inter, Instrument Serif
+  app's colours and its blue accent. Use self-hosted Inter, Instrument Serif
   (display) and IBM Plex Mono (numbers).
 - Don't show greyed-out controls that cannot apply; hide them or explain why.
 - Preserve accessible names, contrast, focus indicators, keyboard use and
