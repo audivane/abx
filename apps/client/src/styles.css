@@ -1,43 +1,19 @@
-/* Audivane ABX — design tokens, layout and components.
+/* Audivane ABX: design tokens, layout and components.
  *
  * Skins share the DSP app's background, panel, line, text and status values
  * (dsp/app/src/styles/tokens.css): Light, Graphite and Midnight. System
- * resolves to Light or Midnight (workspace/ThemeSwitcher.tsx). The accent is
+ * resolves to Light or Graphite (workspace/ThemeSwitcher.tsx). The accent is
  * DSP blue. Text-safe variants (--subtle, --accent-text, --ok-text, --warn-text,
  * --bad-text) and --control borders exist because some shared values are below
  * WCAG AA as small text or as a control boundary; see apps/client/DESIGN.md.
  */
 
 @font-face {
-  font-family: "Inter";
+  font-family: "Geist";
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 600;
   font-display: swap;
-  src: url("./assets/fonts/inter-latin-400.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("./assets/fonts/inter-latin-500.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("./assets/fonts/inter-latin-600.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Instrument Serif";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("./assets/fonts/instrument-serif-latin-400.woff2") format("woff2");
+  src: url("./assets/fonts/geist-latin-wght.woff2") format("woff2");
 }
 
 @font-face {
@@ -50,27 +26,26 @@
 
 :root {
   color-scheme: light;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Audivane Mono Latin", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Warm paper, shared with the website and DSP (light skin). */
-  --bg: #f5f3ee;
-  --panel: #fffdf9;
-  --panel-2: #f0ece4;
-  --raised: #fffdf9;
-  --line: #e3ddd1;
-  --line-strong: #cbc2b2;
-  --fg: #1d1b16;
-  --muted: #5f5a50;
-  --faint: #8a8478;
+  /* Neutral white, shared with the website and DSP (light skin). */
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f6f6f7;
+  --raised: #ffffff;
+  --line: #dcdde1;
+  --line-strong: #c4c6cc;
+  --fg: #141417;
+  --muted: #55575d;
+  --faint: #7d8088;
   --ok: #17915a;
   --ok-soft: rgba(23, 145, 90, 0.12);
   --warn: #b7791f;
   --warn-soft: rgba(183, 121, 31, 0.14);
   --bad: #d13438;
   --bad-soft: rgba(209, 52, 56, 0.12);
-  --shadow: 0 10px 30px rgba(40, 30, 15, 0.1);
+  --shadow: 0 10px 30px rgba(20, 20, 23, 0.1);
 
   /* DSP blue accent. */
   --accent: #2563eb;
@@ -78,12 +53,12 @@
   --accent-soft: rgba(37, 99, 235, 0.12);
 
   /* AA-safe text and control variants. */
-  --subtle: #5f5a50;
+  --subtle: #55575d;
   --accent-text: #1d4ed8;
   --ok-text: #0e6c42;
   --warn-text: #85560f;
   --bad-text: #b4262b;
-  --control: #8c8475;
+  --control: #7d8088;
   --focus: #1d4ed8;
 
   --radius: 14px;
@@ -172,7 +147,6 @@ html {
   caret-color: var(--accent-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "cv11", "ss01";
 }
 
 body {
@@ -264,9 +238,8 @@ kbd {
 }
 
 .display {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 /* Controls */
@@ -472,7 +445,7 @@ fieldset {
 .chip {
   min-height: 32px;
   padding: 5px 12px;
-  border-radius: 99px;
+  border-radius: 8px;
   border: 1px solid var(--control);
   color: var(--muted);
   font-size: 13px;
@@ -499,7 +472,6 @@ fieldset {
   color: var(--bad-text);
   background: var(--bad-soft);
   border: 1px solid color-mix(in srgb, var(--bad) 45%, transparent);
-  border-left-width: 4px;
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 14px;
@@ -523,7 +495,6 @@ fieldset {
   color: var(--fg);
   background: var(--warn-soft);
   border: 1px solid color-mix(in srgb, var(--warn) 50%, transparent);
-  border-left: 4px solid var(--warn);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 14px;
@@ -537,7 +508,6 @@ fieldset {
   color: var(--fg);
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-left: 4px solid var(--accent);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 14px;
@@ -555,14 +525,9 @@ fieldset {
 }
 
 .tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 9px;
-  border-radius: 99px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent-text);
-  background: var(--accent-soft);
 }
 
 .gate-reasons {
@@ -586,10 +551,26 @@ fieldset {
   overflow-wrap: anywhere;
 }
 
-/* Shell */
+/* Shell
+ *
+ * Site shell contract (audivane.app/abx/). The website may insert its own
+ * header before the app root and then:
+ *   - sets `data-site-shell` on <html>: ABX hides its own theme control and
+ *     follows the site's switch (see workspace/ThemeSwitcher.tsx: the site
+ *     writes localStorage["audivane.theme"] and dispatches
+ *     `audivane:theme` with detail "light" | "graphite" | "system");
+ *   - may set `--site-shell-h` on <html> to its header's height, so the app
+ *     fills the rest of the viewport instead of overflowing by that much;
+ *   - sets `--site-shell-max` (its container width) and `--site-shell-gutter`
+ *     (its side padding) on <html>: the ABX sub-bar, session strip and page
+ *     content line up with the site header.
+ * The site header scrolls away, so ABX's sticky bar keeps `top: 0`. Under
+ * the shell ABX drops its own logo and its bar becomes a slim sub-bar with
+ * only a bottom border. Without `data-site-shell` none of this applies.
+ */
 
 .app {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--site-shell-h, 0px));
   display: flex;
   flex-direction: column;
 }
@@ -632,9 +613,7 @@ fieldset {
 }
 
 .brand-product {
-  font: 400 24px/1 var(--font-serif);
   color: var(--accent-text);
-  margin-left: 1px;
 }
 
 .stepper ol {
@@ -660,7 +639,7 @@ fieldset {
   min-height: 38px;
   padding: 6px 14px 6px 7px;
   gap: 9px;
-  border-radius: 99px;
+  border-radius: 8px;
   color: var(--muted);
   font-size: 14px;
   font-weight: 500;
@@ -716,26 +695,18 @@ fieldset {
 }
 
 .local-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 11px;
-  border: 1px solid var(--line);
-  border-radius: 99px;
   color: var(--muted);
   font-size: 13px;
   white-space: nowrap;
 }
 
-.local-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ok);
-}
-
 .theme-control {
   position: relative;
+}
+
+/* On the website the site header's theme switch replaces this control. */
+html[data-site-shell] .theme-control {
+  display: none;
 }
 
 .theme-menu {
@@ -756,10 +727,8 @@ fieldset {
   width: 100%;
   padding: 4px 8px 6px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .theme-option {
@@ -818,7 +787,8 @@ fieldset {
 }
 
 .about-head h2 {
-  font: 400 30px/1.1 var(--font-serif);
+  font: 600 22px/1.2 var(--font-sans);
+  letter-spacing: -0.01em;
 }
 
 .about-lede {
@@ -841,11 +811,9 @@ fieldset {
 }
 
 .section-head h2 {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+  color: var(--fg);
 }
 
 .section-meta,
@@ -875,14 +843,9 @@ fieldset {
 }
 
 .badge {
-  display: inline-flex;
-  padding: 1px 8px;
-  border-radius: 99px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  background: var(--panel-2);
   color: var(--muted);
-  border: 1px solid var(--line);
 }
 
 .badge-available {
@@ -948,14 +911,13 @@ fieldset {
 }
 
 .chain-letter {
-  font: 400 21px/1 var(--font-serif);
+  font: 600 16px/1 var(--font-sans);
   color: var(--fg);
 }
 
 .vs {
   color: var(--subtle);
-  font-family: var(--font-serif);
-  font-size: 18px;
+  font-size: 13px;
 }
 
 .session-end {
@@ -966,9 +928,6 @@ fieldset {
 }
 
 .lifecycle-chip {
-  padding: 3px 10px;
-  border-radius: 99px;
-  border: 1px solid var(--line-strong);
   color: var(--fg);
   font-size: 12.5px;
   font-weight: 600;
@@ -1017,12 +976,15 @@ fieldset {
 }
 
 .card-head h2,
-.disclosure > summary,
+.disclosure > summary {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
 .kicker {
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -1074,8 +1036,6 @@ details > summary::marker {
 }
 
 .summary-meta {
-  text-transform: none;
-  letter-spacing: 0;
   font-weight: 400;
   font-size: 13px;
   color: var(--subtle);
@@ -1318,20 +1278,18 @@ details > summary::marker {
   align-items: stretch;
 }
 
+/* Two columns separated by a rule, not two boxes inside the card. */
 .chain-grid > .vs {
-  display: grid;
-  place-items: center;
-  font-size: 22px;
+  justify-self: center;
+  width: 1px;
+  background: var(--line);
+  font-size: 0;
 }
 
 .side-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--panel-2);
   min-width: 0;
 }
 
@@ -1343,7 +1301,8 @@ details > summary::marker {
 }
 
 .side-letter {
-  font: 400 54px/0.8 var(--font-serif);
+  font: 600 32px/1 var(--font-sans);
+  letter-spacing: -0.02em;
   flex: none;
 }
 
@@ -1765,11 +1724,6 @@ progress {
   border-radius: 50%;
   background: var(--accent);
   color: var(--accent-fg);
-  box-shadow: 0 6px 20px var(--accent-soft);
-}
-
-.transport-toggle:disabled {
-  box-shadow: none;
 }
 
 .scrub {
@@ -1908,7 +1862,8 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 }
 
 .tile-letter {
-  font: 400 92px/0.8 var(--font-serif);
+  font: 600 64px/1 var(--font-sans);
+  letter-spacing: -0.02em;
 }
 
 .tile small {
@@ -1918,8 +1873,8 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 
 .tile[data-selected="true"] {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-  background: linear-gradient(180deg, var(--accent-soft), transparent 75%), var(--panel);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--panel);
 }
 
 .tile[data-selected="true"] .tile-letter {
@@ -1992,7 +1947,8 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 }
 
 .answer-title h2 {
-  font: 400 30px/1.1 var(--font-serif);
+  font: 600 22px/1.2 var(--font-sans);
+  letter-spacing: -0.01em;
 }
 
 .answer-buttons {
@@ -2168,37 +2124,19 @@ input[type="range"]:disabled::-webkit-slider-thumb {
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
-  letter-spacing: 0.08em;
 }
 
-.kicker::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-}
 
-.run-record[data-outcome="significant"] .kicker::before,
-.run-record[data-outcome="not-significant"] .kicker::before {
-  background: var(--accent);
-}
 
 .run-record[data-outcome="sealed"] .kicker {
   color: var(--warn-text);
 }
 
-.run-record[data-outcome="sealed"] .kicker::before {
-  background: var(--warn);
-}
 
 .run-record:is([data-outcome="void"], [data-outcome="failed"]) .kicker {
   color: var(--bad-text);
 }
 
-.run-record:is([data-outcome="void"], [data-outcome="failed"]) .kicker::before {
-  background: var(--bad);
-}
 
 .verdict h2 {
   font-size: 46px;
@@ -2274,7 +2212,9 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 }
 
 .evidence-metrics dd {
-  font: 400 40px/1.15 var(--font-serif);
+  font: 600 30px/1.2 var(--font-sans);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -2294,7 +2234,7 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 }
 
 .track-card .side-letter {
-  font-size: 46px;
+  font-size: 28px;
 }
 
 .track-card .side-title small {
@@ -2323,7 +2263,7 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 }
 
 .player-side {
-  font: 400 22px/1 var(--font-serif);
+  font: 600 17px/1 var(--font-sans);
   min-width: 0.8em;
   text-align: center;
 }
@@ -2376,8 +2316,6 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 .evidence-audio .files-details > summary {
   padding: 14px 0 0;
   font-size: 13.5px;
-  text-transform: none;
-  letter-spacing: 0;
   font-weight: 500;
 }
 
@@ -2460,24 +2398,48 @@ input[type="range"]:disabled::-webkit-slider-thumb {
   margin-top: 4px;
 }
 
+/* Under the website's header (see the site shell contract above). Placed
+   before the narrow layouts so their phone rules still apply. */
+
+html[data-site-shell] .topbar {
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 48px;
+  padding: 0 max(var(--site-shell-gutter, 28px), calc((100% - var(--site-shell-max, 100%)) / 2 + var(--site-shell-gutter, 28px)));
+  border-top: 0;
+  background: var(--bg);
+}
+
+html[data-site-shell] .topbar .brand {
+  display: none;
+}
+
+html[data-site-shell] .topbar .stepper {
+  justify-self: start;
+}
+
+html[data-site-shell] .step {
+  min-height: 32px;
+  padding-block: 4px;
+}
+
+html[data-site-shell] .session-inner {
+  padding-inline: max(var(--site-shell-gutter, 28px), calc((100% - var(--site-shell-max, 100%)) / 2 + var(--site-shell-gutter, 28px)));
+}
+
+html[data-site-shell] .main-content {
+  width: calc(min(var(--site-shell-max, 1180px), 100%) - var(--site-shell-gutter, var(--gutter)) * 2);
+}
+
 /* Narrow layouts */
 
 @media (max-width: 1100px) {
   .local-badge {
     font-size: 0;
-    gap: 0;
-    padding: 6px;
-  }
-
-  .local-badge .local-dot {
-    width: 8px;
-    height: 8px;
   }
 
   .local-badge::after {
     content: "Local";
     font-size: 13px;
-    margin-left: 6px;
   }
 }
 
@@ -2562,6 +2524,11 @@ input[type="range"]:disabled::-webkit-slider-thumb {
     padding-right: 10px;
   }
 
+  html[data-site-shell] .topbar .stepper {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
   /* Phones: the strip wraps instead of scrolling, so the file, both chains
      and End test stay visible without horizontal scrolling. */
   .session-inner {
@@ -2596,11 +2563,13 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 
   .chain-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
+    gap: 16px;
   }
 
   .chain-grid > .vs {
-    font-size: 18px;
+    justify-self: stretch;
+    width: auto;
+    height: 1px;
   }
 
   .card {
@@ -2735,6 +2704,14 @@ input[type="range"]:disabled::-webkit-slider-thumb {
     font-size: 30px;
   }
 
+  /* The Correct/Incorrect slot gets its own reserved line, so the heading row
+     keeps one height whether the heading is "Preparing test" or "Trial N of M"
+     and when feedback appears. */
+  .answer-status {
+    flex-basis: 100%;
+    min-height: 1.5em;
+  }
+
   .stage-fields {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2745,6 +2722,28 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 
   .source-file {
     flex-wrap: wrap;
+  }
+}
+
+/* Under the website's header the steps share a row with the About button.
+   Below 360px the labels become screen-reader text (they stay the buttons'
+   names) and only the numbered circles show, so the row fits beside it. */
+html[data-site-shell] .topbar .stepper {
+  min-width: 0;
+}
+
+@media (max-width: 359px) {
+  html[data-site-shell] .step-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  html[data-site-shell] .step {
+    padding: 4px;
   }
 }
 

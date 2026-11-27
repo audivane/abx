@@ -109,10 +109,7 @@ export function TopBar(props: {
       )}
       <Stepper steps={props.steps} onSelect={props.onSelectStep} />
       <div className="topbar-tools">
-        <span className="local-badge">
-          <span className="local-dot" aria-hidden="true" />
-          Local · nothing uploaded
-        </span>
+        <span className="local-badge">Local, nothing uploaded</span>
         <ThemeSwitcher
           preference={props.themePreference}
           onChange={props.onThemeChange}

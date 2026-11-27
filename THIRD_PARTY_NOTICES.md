@@ -21,8 +21,7 @@ source, build scripts and full notices are part of web distribution. See
 | Supplemental LC3 WASM | Google liblc3 1.1.3, Apache-2.0, built by `tools/build_codec_wasm.sh`. | Source archive, license text and build script are included in the browser materials. |
 | Supplemental LDAC WASM | Pinned AOSP libldac, Apache-2.0, and hegdi/libldacdec, MIT. | Source archives and licenses, including the AOSP `NOTICE`, are included in the browser materials. |
 | Audivane Mono Latin (client), derived from IBM Plex Mono | [Bundled SIL Open Font License and copyright](apps/client/public/ibm-plex-OFL.txt). | Keep this file with the font assets; the material collector also includes it. See [font modification provenance](docs/font-licensing.md). |
-| Inter 4 Latin subsets (unmodified, `@fontsource/inter` 5.3.0) | [Bundled SIL Open Font License and copyright](apps/client/public/inter-OFL.txt). | Keep this file with the font assets; the material collector also includes it. |
-| Instrument Serif Latin subset (unmodified, `@fontsource/instrument-serif` 5.3.0) | [Bundled SIL Open Font License and copyright](apps/client/public/instrument-serif-OFL.txt). | Keep this file with the font assets; the material collector also includes it. |
+| Geist 1.9.2 Latin subset (variable, weights 400 to 600, made with fonttools from the `geist` package) | [Bundled SIL Open Font License and copyright](apps/client/public/geist-OFL.txt). | Keep this file with the font assets; the material collector also includes it. |
 | Measurement implementation attribution | [pyloudnorm notice and full MIT text](packages/measurements/NOTICE.md). | Preserve this attribution in the browser bundle (`measurements-NOTICE.md`). |
 
 Build tools such as Node.js, Vite, TypeScript and Playwright are development

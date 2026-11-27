@@ -101,7 +101,7 @@ function validatePair(a: PcmAudio, b: PcmAudio): ValidatedPair {
 /**
  * Shift-then-crop exactly like core.alignment.align_pair: trim the leading
  * samples of the side that starts later, then keep the common tail length.
- * Never pad silence. @internal — defensive boundary, not the package public API.
+ * Never pad silence. @internal Defensive boundary, not the package public API.
  */
 export function cropForLag(
   aChannels: readonly Float64Array[],

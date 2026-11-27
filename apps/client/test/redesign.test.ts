@@ -26,10 +26,10 @@ import {
 
 // --- Themes ---------------------------------------------------------------
 
-test("the theme set is System, Light, Graphite and Midnight; System resolves to Light or Midnight", () => {
+test("the theme set is System, Light, Graphite and Midnight; System resolves to Light or Graphite", () => {
   assert.deepEqual([...THEME_PREFERENCES], ["system", "light", "graphite", "midnight"]);
   assert.equal(resolveTheme("system", false), "light");
-  assert.equal(resolveTheme("system", true), "midnight");
+  assert.equal(resolveTheme("system", true), "graphite");
   assert.equal(resolveTheme("graphite", false), "graphite");
   assert.equal(resolveTheme("light", true), "light");
   assert.equal(resolveTheme("midnight", false), "midnight");
@@ -204,7 +204,7 @@ test("the chance wording is derived from the computed p-value", () => {
 test("a non-significant final result shows only its heading", () => {
   const value = snapshot({ correct: 5, scored: 8, planned: 8 });
   assert.equal(resultHeading(value), "No significant difference detected");
-  assert.equal(resultKicker(value), "Test complete · 8 of 8 trials");
+  assert.equal(resultKicker(value), "Test complete, 8 of 8 trials");
   assert.equal(resultExplanation(value), "");
 });
 
@@ -228,7 +228,7 @@ test("a significant result at a lenient α does not claim the listener told the 
 test("ended-early, void, failed-check and running runs never read as a verdict", () => {
   const sealed = snapshot({ correct: 3, scored: 3, planned: 8, lifecycle: "sealed", isFinal: false });
   assert.equal(resultHeading(sealed), "Test ended early");
-  assert.equal(resultKicker(sealed), "Ended early · 3 of 8 trials");
+  assert.equal(resultKicker(sealed), "Ended early, 3 of 8 trials");
   assert.match(resultExplanation(sealed), /not a final result and no verdict is drawn/);
   assert.doesNotMatch(resultExplanation(sealed), /Guessing alone/);
 
@@ -246,7 +246,7 @@ test("ended-early, void, failed-check and running runs never read as a verdict",
 
   const running = snapshot({ correct: 2, scored: 2, planned: 8, isFinal: false });
   assert.equal(resultHeading(running), "Test in progress");
-  assert.equal(resultKicker(running), "Test in progress · 2 of 8 trials answered");
+  assert.equal(resultKicker(running), "Test in progress, 2 of 8 trials answered");
   assert.match(resultExplanation(running), /decided only after every planned trial/);
   assert.doesNotMatch(resultExplanation(running), /Guessing alone/);
 });

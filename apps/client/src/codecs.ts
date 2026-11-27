@@ -10,13 +10,13 @@ export function codecLabel(codecId: CodecId): string {
   return CODEC_CATALOG[codecId].displayName;
 }
 
-/** Short stage label for summaries: "Opus · 128 kbps", "PCM16 passthrough". */
+/** Short stage label for summaries: "Opus 128 kbps", "PCM16 passthrough". */
 export function stageLabel(stage: CodecSelection): string {
   if (stage.codecId === "noop_passthrough") return "PCM16 passthrough";
-  return `${CODEC_CATALOG[stage.codecId].displayName} · ${stage.bitrateKbps} kbps`;
+  return `${CODEC_CATALOG[stage.codecId].displayName} ${stage.bitrateKbps} kbps`;
 }
 
-/** One chain as ordered stages: "AAC · 128 kbps → MP3 · 128 kbps". */
+/** One chain as ordered stages: "AAC 128 kbps → MP3 128 kbps". */
 export function chainLabel(stages: readonly CodecSelection[]): string {
-  return stages.length === 0 ? "—" : stages.map(stageLabel).join(" → ");
+  return stages.length === 0 ? "-" : stages.map(stageLabel).join(" → ");
 }

@@ -128,7 +128,7 @@ export function StageEditor(props: {
         <span className="side-title">
           <small>
             Side {sideLabel}
-            {props.stages.length > 1 ? ` · ${props.stages.length} stages` : ""}
+            {props.stages.length > 1 ? `, ${props.stages.length} stages` : ""}
           </small>
           <b>{chainLabel(props.stages)}</b>
         </span>
@@ -181,7 +181,7 @@ export function StageEditor(props: {
                         >
                           {codecLabel(codecId)}
                           {codec && !isAvailable(codec)
-                            ? ` — ${codec.availability}${reason ? `: ${reason}` : ""}`
+                            ? ` (${codec.availability}${reason ? `: ${reason}` : ""})`
                             : ""}
                         </option>
                       );

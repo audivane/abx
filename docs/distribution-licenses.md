@@ -19,8 +19,7 @@ review of the intended channels, regions or patent exposure.
 | hegdi/libldacdec (`7f3bd6cc…`) | MIT, copyright 2021 Dirk Helbig | Supplemental browser LDAC decoder WASM |
 | React / React DOM 19.3.1 | MIT | Bundled client JavaScript |
 | Audivane Mono Latin (derived from IBM Plex Mono) | SIL Open Font License 1.1 | Self-hosted font; `apps/client/public/ibm-plex-OFL.txt` |
-| Inter (unmodified Latin subsets) | SIL Open Font License 1.1 | Self-hosted fonts; `apps/client/public/inter-OFL.txt` |
-| Instrument Serif (unmodified Latin subset) | SIL Open Font License 1.1 | Self-hosted font; `apps/client/public/instrument-serif-OFL.txt` |
+| Geist (Latin subset of the variable font) | SIL Open Font License 1.1 | Self-hosted font; `apps/client/public/geist-OFL.txt` |
 | Measurement attribution | MIT notice in `packages/measurements/NOTICE.md` | Translated loudness implementation and retained comparison code |
 | `@ffmpeg/ffmpeg` 0.12.15 | MIT | Browser wrapper |
 | `@ffmpeg/core` 0.12.10 | GPL-2.0-or-later | Browser WASM core |
@@ -97,8 +96,8 @@ files remain published.
 
 Keep these with the release:
 
-- `apps/client/public/ibm-plex-OFL.txt`, `inter-OFL.txt` and
-  `instrument-serif-OFL.txt` beside the font assets.
+- `apps/client/public/ibm-plex-OFL.txt` and `geist-OFL.txt` beside the font
+  assets.
 - `packages/measurements/NOTICE.md` (the client bundle copies it as
   `measurements-NOTICE.md`).
 - The project `LICENSE` and the current `THIRD_PARTY_NOTICES.md`.

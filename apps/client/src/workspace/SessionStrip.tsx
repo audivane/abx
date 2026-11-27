@@ -26,7 +26,7 @@ export function SessionStrip(props: SessionStripProps): JSX.Element {
       <div className="session-inner">
         <span className="session-item session-file">
           <b>{props.sourceName ?? "No source"}</b>
-          {props.sourceLength ? <> · {props.sourceLength}</> : null}
+          {props.sourceLength ? <>, {props.sourceLength}</> : null}
         </span>
         <span className="session-item session-chains">
           <span className="chain-pill">
@@ -58,7 +58,7 @@ export function SessionStrip(props: SessionStripProps): JSX.Element {
           ) : (
             <>
               <span className="lock-note">
-                {props.phase === "preparing" ? "Preparing · setup locked" : "Locked during the test"}
+                {props.phase === "preparing" ? "Preparing, setup locked" : "Locked during the test"}
               </span>
               {props.canEnd ? (
                 <button

@@ -1,11 +1,18 @@
 import { useEffect, useId, useRef, useState, type JSX } from "react";
 
-/** The stored choice. System resolves to Light or Midnight. */
+/** The stored choice. System resolves to Light or Graphite. */
 export type ThemePreference = "system" | "light" | "graphite" | "midnight";
 /** The applied skin, written to `html[data-theme]`. */
 export type ResolvedTheme = "light" | "graphite" | "midnight";
 
 export const THEME_STORAGE_KEY = "audivane.theme";
+/**
+ * Dispatched on `window` by the audivane.app site header (whose switch offers
+ * Light, Graphite and System) with the new preference as `detail`. The site
+ * also writes the same value to THEME_STORAGE_KEY. See the site shell
+ * contract in styles.css.
+ */
+export const THEME_EVENT = "audivane:theme";
 export const THEME_PREFERENCES: readonly ThemePreference[] = [
   "system",
   "light",
@@ -36,7 +43,7 @@ export function resolveTheme(
   preference: ThemePreference,
   systemDark: boolean,
 ): ResolvedTheme {
-  if (preference === "system") return systemDark ? "midnight" : "light";
+  if (preference === "system") return systemDark ? "graphite" : "light";
   return preference;
 }
 
@@ -56,14 +63,25 @@ function systemPrefersDark(): boolean {
   }
 }
 
+/** Browser chrome colour per skin (each skin's --bg). */
+const THEME_COLOR: Readonly<Record<ResolvedTheme, string>> = {
+  light: "#ffffff",
+  graphite: "#1e1f22",
+  midnight: "#0b1020",
+};
+
 /**
  * Apply the resolved theme before React paints. The attribute is the single
  * source of truth for the token sets and native control colour schemes.
  */
 function applyTheme(preference: ThemePreference, systemDark: boolean): void {
   const root = document.documentElement;
-  root.dataset.theme = resolveTheme(preference, systemDark);
+  const resolved = resolveTheme(preference, systemDark);
+  root.dataset.theme = resolved;
   root.dataset.themePreference = preference;
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", THEME_COLOR[resolved]);
 }
 
 const initialPreference =
@@ -105,6 +123,26 @@ export function useThemePreference(): {
     // Older WebViews expose the deprecated listener API only.
     media.addListener(onChange);
     return () => media.removeListener(onChange);
+  }, []);
+
+  // Follow the site header's switch and other tabs. Unknown values are
+  // ignored rather than resetting the choice.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onSite = (event: Event): void => {
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (isThemePreference(detail)) setPreference(detail);
+    };
+    const onStorage = (event: StorageEvent): void => {
+      if (event.key !== THEME_STORAGE_KEY) return;
+      if (isThemePreference(event.newValue)) setPreference(event.newValue);
+    };
+    window.addEventListener(THEME_EVENT, onSite);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(THEME_EVENT, onSite);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   useEffect(() => {
@@ -232,7 +270,7 @@ export function ThemeSwitcher(props: {
               />
               <span>{LABELS[value]}</span>
               {value === "system" ? (
-                <small>Light or Midnight</small>
+                <small>Light or Graphite</small>
               ) : null}
             </label>
           ))}

@@ -25,13 +25,13 @@ Build and run from the repository root (output stays out of the build tree).
 The CI `checks` job runs the same commands.
 
 ```sh
-mkdir -p /tmp/opencode/ldac-wasm-lifecycle
+mkdir -p /tmp/audivane-ldac-lifecycle
 cc -std=c11 -Wall -Wextra -Wno-unused-parameter -Werror \
     -Itools/test/ldac-wasm-lifecycle \
     tools/test/ldac-wasm-lifecycle/lifecycle_test.c tools/ldac_wasm.c \
     -Wl,--wrap=malloc,--wrap=calloc,--wrap=free \
-    -o /tmp/opencode/ldac-wasm-lifecycle/lifecycle_test
-/tmp/opencode/ldac-wasm-lifecycle/lifecycle_test
+    -o /tmp/audivane-ldac-lifecycle/lifecycle_test
+/tmp/audivane-ldac-lifecycle/lifecycle_test
 ```
 
 Exit 0 with only `ok:` lines means every covered path balances its allocations

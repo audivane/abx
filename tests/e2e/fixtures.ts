@@ -209,10 +209,17 @@ export async function openLab(page: Page, origin: string): Promise<NetworkGuard>
   // fast-start spec verifies the ordinary user defaults and combined action.
   await page.locator(".advanced-preparation > summary").click();
   await page.locator("#preparation-policy").selectOption("codec-probe-only");
-  await page.locator(".listening-test-plan > summary").click();
+  await openTestPlan(page);
   await expect(page.getByRole("button", { name: "Prepare diagnostic artifacts" }))
     .toBeVisible();
   return guard;
+}
+
+/** The plan editor starts expanded; open it only if a test collapsed it. */
+export async function openTestPlan(page: Page): Promise<void> {
+  const plan = page.locator(".listening-test-plan");
+  if (!(await plan.evaluate((el) => (el as HTMLDetailsElement).open)))
+    await plan.locator("> summary").click();
 }
 
 export async function chooseWav(page: Page, name: string, bytes: Uint8Array): Promise<void> {

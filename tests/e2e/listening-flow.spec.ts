@@ -12,6 +12,7 @@ import {
   guardNetwork,
   makePcm16Wav,
   openLab,
+  openTestPlan,
   prepare,
 } from "./fixtures.js";
 
@@ -726,7 +727,7 @@ test("raw diagnostic artifact stays diagnostic-only, then the primary prepare te
   await expect(page.locator("#codec-a option[value=opus]")).toBeEnabled({ timeout: 90_000 });
   await expect(page.locator("#codec-b option[value=ldac]")).toBeDisabled();
   await page.locator(".advanced-preparation > summary").click();
-  await page.locator(".listening-test-plan > summary").click();
+  await openTestPlan(page);
   const pageErrors = collectPageErrors(page);
 
   await chooseWav(page, "listening-raw-source.wav", makePcm16Wav({

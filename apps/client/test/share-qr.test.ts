@@ -34,7 +34,7 @@ const largest: SharedTest = {
   b: Array(4).fill({ codecId: "aptx_hd", bitrateKbps: 576 }),
   canaryEnabled: true,
   plan: { ...setup.plan, plannedTrials: 1000, alpha: 0.012345, calibrationEnabled: true },
-  source: { title: "—".repeat(200), durationSeconds: 1799.9 },
+  source: { title: "音".repeat(200), durationSeconds: 1799.9 },
 };
 
 test("QR codes with the centre logo still decode to the exact link", () => {

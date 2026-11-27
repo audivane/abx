@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1.3 (2026-11-27)
+
+A neutral white Light theme and room for the website's header.
+
+- Light is neutral white, matching the website and DSP.
+- System follows a dark OS with Graphite; Midnight stays in the theme menu.
+- On audivane.app the site's header, logo and theme switch sit above the
+  app; ABX's own bar becomes a slim step bar at the site's width.
+- Plainer type and copy: Geist (the website's typeface) replaces Inter and
+  Instrument Serif everywhere (neither is bundled any more), headings are no longer uppercase, items are
+  separated by commas instead of middots, and buttons lose their arrows.
+- Flatter setup: sides A and B are two columns split by a rule, not boxes in
+  a box; notices lose their coloured left edge, and status tags, the local
+  note and the result kicker lose their pills and dots.
+- Status messages are full sentences.
+
 ## 1.1.2 (2026-11-22)
 
 DSP's blue in place of the copper accent, and clearer setup.

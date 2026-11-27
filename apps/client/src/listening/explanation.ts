@@ -50,13 +50,13 @@ export function resultKicker(snapshot: ExperimentSnapshot): string {
       : `${scoredTrials} of ${planned} ${trialsWord(planned)}`;
   switch (snapshot.lifecycle) {
     case "completed":
-      return `Test complete · ${count}`;
+      return `Test complete, ${count}`;
     case "sealed":
-      return `Ended early · ${count}`;
+      return `Ended early, ${count}`;
     case "void":
-      return `Run void · ${count}`;
+      return `Run void, ${count}`;
     default:
-      return `Test in progress · ${count} answered`;
+      return `Test in progress, ${count} answered`;
   }
 }
 

@@ -1113,7 +1113,7 @@ export class BrowserPreparationEngine implements PreparationEngine<File> {
         worker = activeWorker;
         await this.throwIfCancelled(job);
 
-        report({ phase: "probing", message: "Probing this build's real encoders and decoders" });
+        report({ phase: "probing", message: "Checking this build's encoders and decoders" });
         const probe = await this.ensureProbe(job.abort.signal);
         await this.throwIfCancelled(job);
         if (!probe.probe) {

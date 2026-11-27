@@ -20,11 +20,11 @@ function formatLevel(
     case "finite":
       return `${level.value.toFixed(2)} ${unit}`;
     case "negative-infinity":
-      return `−∞ ${unit} — ${meanings.negative}`;
+      return `−∞ ${unit}: ${meanings.negative}`;
     case "undefined":
-      return `undefined — ${meanings.missing} (${level.reason})`;
+      return `undefined: ${meanings.missing} (${level.reason})`;
     case "unavailable":
-      return `unavailable — ${level.reason}`;
+      return `unavailable: ${level.reason}`;
   }
 }
 
@@ -37,7 +37,7 @@ function formatPair(
 ): string {
   if (a.status === "finite" && b.status === "finite")
     return `${a.value.toFixed(2)} / ${b.value.toFixed(2)} ${unit}`;
-  return `A ${formatLevel(a, unit, meanings)} · B ${formatLevel(b, unit, meanings)}`;
+  return `A ${formatLevel(a, unit, meanings)}, B ${formatLevel(b, unit, meanings)}`;
 }
 
 const LOUDNESS_MEANINGS = {
@@ -213,8 +213,8 @@ function TrackCard(props: {
             {chainLabel(trackStages(track))}
           </b>
           <small>
-            Delivered {formatRate(delivered.sampleRate)} ·{" "}
-            {formatChannels(delivered.channels)} · {formatLength(duration)}
+            Delivered {formatRate(delivered.sampleRate)},{" "}
+            {formatChannels(delivered.channels)}, {formatLength(duration)}
           </small>
         </span>
       </header>
@@ -264,10 +264,10 @@ function CanaryMaterialPanel(props: {
     <section className="canary" aria-labelledby="canary-heading">
       <div className="gate-line">
         <h3 id="canary-heading">
-          Diagnostic canary material · <code>{report.policy}</code>
+          Diagnostic canary material: <code>{report.policy}</code>
         </h3>
         <p className="card-meta">
-          <strong>{report.status}</strong> · usable{" "}
+          <strong>{report.status}</strong>, usable{" "}
           <code>{String(report.usable)}</code>
         </p>
       </div>
@@ -340,14 +340,14 @@ function CanaryMaterialPanel(props: {
           <dd>{report.reason}</dd>
           <dt>Frozen material facts</dt>
           <dd>
-            cutoff {report.cutoffHz} Hz · grid{" "}
-            <code>{report.frequencyGrid}</code> · drive {report.drive}× · clip ±
+            cutoff {report.cutoffHz} Hz, grid{" "}
+            <code>{report.frequencyGrid}</code>, drive {report.drive}×, clip ±
             {report.clipLevel}
           </dd>
           <dt>Layout</dt>
           <dd>
-            {report.sampleRate} Hz · {report.channels === 1 ? "mono" : "stereo"}{" "}
-            · {report.frames} frames
+            {report.sampleRate} Hz, {report.channels === 1 ? "mono" : "stereo"},{" "}
+            {report.frames} frames
           </dd>
           {canary.audio ? (
             <>
@@ -422,7 +422,7 @@ export function AudioComparison({
       <div className="card-head">
         <h2 id="results-heading">Listen to each side</h2>
         <span className="card-meta">
-          {audioBlocked ? "Available after the test" : "Unblinded — labels shown"}
+          {audioBlocked ? "Available after the test" : "Unblinded: labels shown"}
         </span>
       </div>
       {audioBlocked ? (

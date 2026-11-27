@@ -445,7 +445,7 @@ test("corrected mode refuses silence and short crops then retries cleanly", asyn
     sampleRate: 48000, channels: 1, seconds: 0.6, amplitude: 0,
   }));
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Preparation failed.");
+  await expect(page.locator(".run-status")).toContainText("Preparation stopped with an error.");
   await expect(page.locator(".status-error")).toContainText(/preparation-gate-failed.*non-evidentiary/);
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Prepare diagnostic artifacts" }))
@@ -455,7 +455,7 @@ test("corrected mode refuses silence and short crops then retries cleanly", asyn
     sampleRate: 48000, channels: 1, seconds: 0.2,
   }));
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Preparation failed.");
+  await expect(page.locator(".run-status")).toContainText("Preparation stopped with an error.");
   await expect(page.locator(".status-error")).toContainText(/short-crop/);
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
 
@@ -487,7 +487,7 @@ test("corrected worker load failure fails closed and a fresh preparation retries
   const workerURL = /measurement-worker(?:\.ts|-[^/]+\.js)(?:\?.*)?$/;
   await page.route(workerURL, (route) => route.abort());
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Preparation failed.");
+  await expect(page.locator(".run-status")).toContainText("Preparation stopped with an error.");
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Prepare diagnostic artifacts" }))
     .toBeEnabled();
@@ -602,7 +602,7 @@ test("cancel and reset during the real corrected worker start terminate it and p
       .__preparationAction = "cancel";
   });
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Cancelled.", { timeout: 150_000 });
+  await expect(page.locator(".run-status")).toContainText("Preparation was cancelled.", { timeout: 150_000 });
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
 
   const afterCancel = await page.evaluate(() => (

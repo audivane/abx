@@ -152,7 +152,7 @@ export function ShareDialog(props: {
           </div>
           <p className="share-status" role="status" aria-live="polite">
             {copied === "copied"
-              ? "Link copied."
+              ? "The link is on your clipboard."
               : copied === "failed"
                 ? "Could not copy. Select the link and copy it yourself."
                 : ""}

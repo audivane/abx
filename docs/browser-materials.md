@@ -22,7 +22,7 @@ the app.
 | `lc3_codec.js` | `38e628d47124fbde346c219bd81417e30a6c32af2dac88b38c4ceb95267db9c0` | `third_party/wasm/bin` manifest == served copy |
 | `lc3_codec.wasm` | `ca703c830295ba27b6c45b830e64a4f6ebcf762537703a4d70ac275183e83619` | Same; reproduced byte-for-byte |
 | `ldac_codec.js` | `066f71a7252e8e7a66e6b61247bba6f487fd3a7405f6dd6b90abe4633ff0c21b` | Same |
-| `ldac_codec.wasm` | `64b40d8932c303df83f233606e67d0361ad577dfc380a37d509a031e416d1750` | Same; reproduced only under the conditions below |
+| `ldac_codec.wasm` | `47d454c13bbfad979b78a6e0634c03cd03382f388747e1f380cd80caa0dbe4c0` | Same; reproduced only under the conditions below |
 
 The installed package and the served copies were compared, not just the
 lockfile. `apps/client/public/codec-assets/` currently matches these hashes.
@@ -95,7 +95,7 @@ hashed inventory plus a machine-readable completeness/evidence report.
 ```sh
 # full evidence tree and deployable archive, including optional compiler sources
 node tools/collect-browser-materials.mjs \
-  --source-cache /tmp/opencode/browser-src \
+  --source-cache /tmp/audivane-browser-source-cache \
   --output build/browser-materials \
   --include-toolchain-sources \
   --bundle build/browser-materials.tar.gz
@@ -121,42 +121,36 @@ way to regenerate the tree, and the parent will serve it at
 
 Key artifacts:
 
-- `build/browser-materials/REPORT.json` — source completeness and evidence bounds
-- `build/browser-materials/MANIFEST.json` — every file with size and SHA-256
-- `build/browser-materials/NOTICES.md` — license inventory
-- `build/browser-materials/SOURCE-OFFER.md` — source URLs and rebuild notes
-- `build/browser-materials/SERVING.md` — layout for `/sources/browser/`
-- `build/browser-materials/distributed/` — exact npm and supplemental bytes
-- `build/browser-materials/provenance/source-evidence.json` — source-ref inference
-- `build/browser-materials/provenance/supplemental-reproduction.json` — LC3/LDAC reproduction conditions
+- `build/browser-materials/REPORT.json`: source completeness and evidence bounds
+- `build/browser-materials/MANIFEST.json`: every file with size and SHA-256
+- `build/browser-materials/NOTICES.md`: license inventory
+- `build/browser-materials/SOURCE-OFFER.md`: source URLs and rebuild notes
+- `build/browser-materials/SERVING.md`: layout for `/sources/browser/`
+- `build/browser-materials/distributed/`: exact npm and supplemental bytes
+- `build/browser-materials/provenance/source-evidence.json`: source-ref inference
+- `build/browser-materials/provenance/supplemental-reproduction.json`: LC3/LDAC reproduction conditions
 
 ## Supplemental WASM reproduction
 
 Both supplemental modules reproduce byte-for-byte with the recorded Emscripten
-6.0.13 toolchain and the exact pinned sources, but only when:
+6.0.13 toolchain and the exact pinned sources, using the script's defaults:
 
 ```sh
-LC_ALL=C \
-CODEC_WASM_BUILD_DIR=/tmp/opencode/codec-wasm-build \
-CODEC_WASM_EMSDK_DIR=/tmp/opencode/emsdk \
-tools/build_codec_wasm.sh
+tools/build_codec_wasm.sh --clean
 ```
 
-Two non-obvious inputs are part of the build identity:
+Three inputs are part of the build identity, and the script sets all three:
 
-1. **Locale.** Under the normal `en_US.UTF-8` locale, the bash wildcard link
-   order differs. LC3 is unchanged, but `ldac_codec.wasm` becomes
-   `ce39de9e03dadf19e5f9fdeb0e4f9143fb57542cb1d5e29c860b94c68c20647e` instead of
-   the served `64b40d89…`.
-2. **Absolute build directory.** `libldacdec.c` assertion data embeds the source
-   path. A different `CODEC_WASM_BUILD_DIR` changes `ldac_codec.wasm` even under
-   `LC_ALL=C`.
+1. **Toolchain.** It installs and activates emsdk 6.0.13
+   (`CODEC_WASM_EMSDK_VERSION`), not `latest`.
+2. **Locale.** It exports `LC_ALL=C`. Under another locale the bash wildcard
+   link order differs, which changes `ldac_codec.wasm` (LC3 is unaffected).
+3. **Absolute build directory.** `libldacdec.c` assertion data embeds the source
+   path, so the default `CODEC_WASM_BUILD_DIR=/tmp/audivane-codec-build` is
+   part of the served LDAC bytes. Overriding it (as CI does for caching)
+   produces a working module with different bytes.
 
-`tools/build_codec_wasm.sh` currently installs emsdk `latest`, records only the
-`emcc --version` string, and sets neither variable. The exact sources and served
-bytes are therefore collected and reproducible, but a clean-room rebuild is not
-hermetic with the script as written. This is recorded as a reproducibility note,
-not a claim that the permissively licensed LC3/LDAC source is missing.
+A clean rebuild with these defaults is byte-identical to the served files.
 
 ## Source completeness and serving
 

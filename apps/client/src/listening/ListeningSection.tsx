@@ -52,7 +52,7 @@ export interface ListeningSectionProps {
 const TILE_CAPTIONS: Readonly<Record<PlaybackLabel, string>> = {
   A: "Reference A",
   B: "Reference B",
-  X: "Unknown — A or B?",
+  X: "Unknown: A or B?",
 };
 
 /** Segments for short plans; long plans use one continuous bar. */
@@ -279,7 +279,7 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
       : null;
   const subline =
     trial !== null && !terminal && trial.kind === "calibration"
-      ? "Calibration · not scored"
+      ? "Calibration, not scored"
       : !terminal && primary.busy
         ? (primary.message ?? "Aligning and level-matching both sides")
         : null;
@@ -322,7 +322,7 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
         eligibility !== null && (
           <p className="warning" role="alert">
             <strong>
-              {rawArtifact ? "Prepared for diagnostics." : "Listening refused."}
+              {rawArtifact ? "Prepared for diagnostics." : "This pair cannot be used for listening."}
             </strong>{" "}
             {eligibility}
             {rawArtifact
@@ -431,7 +431,7 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
         state.session !== "idle" && (
           <section className="listening-run" aria-labelledby={`${ids}-run`}>
             <h2 className="sr-only" id={`${ids}-run`}>
-              Run · {snapshot.lifecycle}
+              Run: {snapshot.lifecycle}
             </h2>
             {state.error !== null && state.error.retry !== "answer" && (
               <div className="status-error" role="alert">
@@ -538,7 +538,7 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
             <dl className="facts">
               <dt>Plan</dt>
               <dd>
-                {snapshot.plan.plannedTrials ?? "practice"} trials · α{" "}
+                {snapshot.plan.plannedTrials ?? "practice"} trials, α{" "}
                 {snapshot.plan.alpha}
               </dd>
               <dt>Labels</dt>
@@ -753,7 +753,7 @@ export function ListeningSection(props: ListeningSectionProps): JSX.Element {
                   className="primary"
                   onClick={props.onViewResults}
                 >
-                  View results <span aria-hidden="true">→</span>
+                  View results
                 </button>
               </div>
             </div>

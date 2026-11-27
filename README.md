@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<h3 align="center">ABX — blind audio comparisons</h3>
+<h3 align="center">ABX: blind audio comparisons</h3>
 
 <p align="center">
   Can you really hear the difference between two codecs, bitrates or encoders?<br>
@@ -59,12 +59,12 @@ later are browser-only.
 
 <img src="docs/images/listen-light.webp" alt="The Listen step with the trial progress bar" width="420" align="right">
 
-1. **Setup** — import a track and pick the codec and bitrate for each side.
-2. **Prepare** — Audivane encodes both sides, aligns and level-matches them,
+1. **Setup**: import a track and pick the codec and bitrate for each side.
+2. **Prepare**: Audivane encodes both sides, aligns and level-matches them,
    and verifies the result.
-3. **Listen** — play A, B and X as often as you like, then answer
+3. **Listen**: play A, B and X as often as you like, then answer
    *X is A* or *X is B*. Keys: <kbd>Space</kbd>, <kbd>A</kbd> <kbd>B</kbd> <kbd>X</kbd>, <kbd>1</kbd> <kbd>2</kbd>.
-4. **Results** — score, p-value and the complete record, ready to export.
+4. **Results**: score, p-value and the complete record, ready to export.
 
 <br clear="right">
 
@@ -72,7 +72,7 @@ later are browser-only.
 
 | | |
 | --- | --- |
-| **Input** | WAV, FLAC, MP3, M4A/MP4, AAC (ADTS), Ogg/Opus — up to 30 min / 512 MiB, mono or stereo |
+| **Input** | WAV, FLAC, MP3, M4A/MP4, AAC (ADTS), Ogg/Opus (up to 30 min / 512 MiB, mono or stereo) |
 | **Codecs** | MP3, AAC, Opus, Vorbis, MP2, SBC, aptX, aptX HD, LC3, LDAC |
 | **Rates** | 44.1, 48 and 96 kHz kept as-is; other rates converted to 48 kHz |
 | **Playback** | Verified PCM16 WAV for both sides |
@@ -107,6 +107,6 @@ Bug reports and pull requests are welcome. Please read
 Copyright © 2026 Triet ([@Triet1402](https://github.com/Triet1402)).
 Audivane ABX is free software under the
 [GNU Affero General Public License v3.0 only](LICENSE).
-Bundled codecs, fonts and libraries keep their own licenses — see
+Bundled codecs, fonts and libraries keep their own licenses; see
 [third-party notices](THIRD_PARTY_NOTICES.md) and
 [browser materials](docs/browser-materials.md).

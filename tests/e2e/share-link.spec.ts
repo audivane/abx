@@ -16,7 +16,7 @@ test("opening a test link fills the setup, clears the address bar and never star
   await page.goto(`/#${encodeSharedTest(shared)}`);
 
   const banner = page.locator(".share-banner");
-  await expect(banner).toContainText("Shared test: Opus 128 vs AAC 256 → MP3 320 · 16 trials · fixed labels · 48 kHz");
+  await expect(banner).toContainText("Shared test: Opus 128 vs AAC 256 → MP3 320, 16 trials, fixed labels, 48 kHz");
   await expect(banner).toContainText("Sharer's file: sharer.wav (3.0 s)");
   expect(new URL(page.url()).hash).toBe("");
 
@@ -50,7 +50,7 @@ test("sharing with the file name adds it to the link", async ({ page }) => {
   await chooseWav(page, "mine.wav", wav);
   await page.getByRole("button", { name: "Copy test link" }).click();
   const link = page.getByRole("textbox", { name: "Test link" });
-  await expect(link).toHaveValue(/#a=lossless&b=opus-128&/);
+  await expect(link).toHaveValue(/#a=lossless&b=aac-128&/);
   await page.getByRole("checkbox", { name: /Include file name/ }).check();
   await expect(link).toHaveValue(/&file=mine\.wav$/);
 });

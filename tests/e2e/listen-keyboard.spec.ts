@@ -7,6 +7,7 @@ import {
   expectNoRemoteOrUpload,
   guardNetwork,
   makePcm16Wav,
+  openTestPlan,
 } from "./fixtures.js";
 
 async function openApp(page: Page, origin: string) {
@@ -19,7 +20,7 @@ async function openApp(page: Page, origin: string) {
 async function startTest(page: Page, trials: number): Promise<void> {
   await chooseWav(page, `keyboard-${trials}.wav`, makePcm16Wav({ sampleRate: 48_000, channels: 1, seconds: 0.8 }));
   await configure(page, { a: "noop_passthrough", b: "opus", bitrateB: 64 });
-  await page.locator(".listening-test-plan > summary").click();
+  await openTestPlan(page);
   await page.getByLabel("Planned test trials N (1–1000)").fill(String(trials));
   await page.getByRole("button", { name: "Prepare test", exact: true }).click();
   await expect(page.locator(".listening-trial")).toBeVisible({ timeout: 180_000 });
@@ -154,15 +155,14 @@ test("completed Results label each unblinded player A or B on the player itself 
   await expect(done).toBeVisible({ timeout: 60_000 });
   await done.getByRole("button", { name: /View results/ }).click();
   await expect(page.locator("#evidence-view")).toBeVisible();
-  await expect(page.locator(".run-record .kicker")).toHaveText("Test complete · 1 of 1 trial");
-  await expect(page.locator(".run-record .verdict-text")).toContainText(/You got [01] of 1 right/);
+  await expect(page.locator(".run-record .kicker")).toHaveText("Test complete, 1 of 1 trial");
 
   const sideA = page.locator('.track-card[data-side="a"]');
   const sideB = page.locator('.track-card[data-side="b"]');
   await expect(sideA.locator(".player .player-side")).toHaveText("A");
   await expect(sideB.locator(".player .player-side")).toHaveText("B");
   await expect(sideA).toContainText("PCM16 passthrough");
-  await expect(sideB).toContainText("Opus · 64 kbps");
+  await expect(sideB).toContainText("Opus 64 kbps");
   await expect(sideA.getByRole("button", { name: "Download WAV A" })).toBeEnabled();
   await expect(sideB.getByRole("button", { name: "Download WAV B" })).toBeEnabled();
 

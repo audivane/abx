@@ -588,7 +588,7 @@ test("invalid, truncated and unsupported WAV sources fail closed and allow retry
         await chooseWav(page, entry.name, entry.bytes);
       }
       await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-      await expect(page.locator(".run-status")).toContainText("Preparation failed.");
+      await expect(page.locator(".run-status")).toContainText("Preparation stopped with an error.");
       await expect(page.getByRole("alert").filter({ hasText: entry.pattern })).toBeVisible();
       await expect(page.locator(".evidence-audio")).toHaveCount(0);
       await expect(page.getByRole("button", { name: "Prepare diagnostic artifacts" }))
@@ -627,7 +627,7 @@ test("cancel and reset terminate the worker, block stale results, and permit ret
     timeout: 150_000,
   });
   await page.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.locator(".run-status")).toContainText("Cancelled.", { timeout: 120_000 });
+  await expect(page.locator(".run-status")).toContainText("Preparation was cancelled.", { timeout: 120_000 });
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Prepare diagnostic artifacts" }))
     .toBeEnabled();
@@ -656,7 +656,7 @@ test("cancel and reset terminate the worker, block stale results, and permit ret
   await chooseWav(page, "heavy-reset-loading.wav", heavy);
   await configure(page, { a: "noop_passthrough", b: "opus", bitrateB: 128, mode: "native" });
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Preparing.");
+  await expect(page.locator(".run-status")).toContainText("Preparing the test audio.");
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(page.locator(".run-status")).toBeEmpty({ timeout: 120_000 });
   await expect(page.locator("#source-file")).toHaveValue("");
@@ -769,7 +769,7 @@ test("cancel and reset during active measurement computation terminate the real 
     (window as unknown as { __measurementAction?: string | null }).__measurementAction = "cancel";
   });
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Cancelled.", { timeout: 150_000 });
+  await expect(page.locator(".run-status")).toContainText("Preparation was cancelled.", { timeout: 150_000 });
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
 
   const afterCancel = await page.evaluate(() => (

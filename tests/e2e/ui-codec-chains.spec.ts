@@ -84,7 +84,7 @@ test("mixed two-stage browser chain exposes all stage facts, exports them and lo
   await setStage(page, "a", 1, "aac", 128);
   await addStage(page, "a");
   await setStage(page, "a", 2, "mp3", 128);
-  // Side B stays the default one-stage Opus 128 request.
+  // Side B stays the default one-stage AAC 128 request.
 
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
   await expect(page.locator(".evidence-audio")).toBeVisible({ timeout: 150_000 });
@@ -99,13 +99,13 @@ test("mixed two-stage browser chain exposes all stage facts, exports them and lo
   expect(request.version).toBe(2);
   if (request.version === 2) {
     expect(request.a.map((stage) => stage.codecId)).toEqual(["aac", "mp3"]);
-    expect(request.b.map((stage) => stage.codecId)).toEqual(["opus"]);
+    expect(request.b.map((stage) => stage.codecId)).toEqual(["aac"]);
   }
   expectStageFacts(artifact, "a", [
     { codecId: "aac", bitrateKbps: 128 },
     { codecId: "mp3", bitrateKbps: 128 },
   ]);
-  expectStageFacts(artifact, "b", [{ codecId: "opus", bitrateKbps: 128 }]);
+  expectStageFacts(artifact, "b", [{ codecId: "aac", bitrateKbps: 128 }]);
   expect(diagnostic.stageProvenance.a).toHaveLength(2);
   expect(diagnostic.stageProvenance.b).toHaveLength(1);
   expect(diagnostic.stageProvenance.perStageFallback).toBe(false);
@@ -257,7 +257,7 @@ test("an intermediate-stage abort cancels cleanly and an explicit retry succeeds
     await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
     await expect(page.locator(".run-status")).toContainText(/stage 2/i, { timeout: 150_000 });
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
-    await expect(page.locator(".run-status")).toContainText("Cancelled.", { timeout: 150_000 });
+    await expect(page.locator(".run-status")).toContainText("Preparation was cancelled.", { timeout: 150_000 });
     await expect(page.locator(".evidence-audio")).toHaveCount(0);
 
     // Retry is an explicit new run; no stale artifact is published.

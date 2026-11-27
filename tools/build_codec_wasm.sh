@@ -12,9 +12,14 @@
 # third_party/wasm/VERSION.txt.
 #
 # Environment:
-#   CODEC_WASM_BUILD_DIR  sources/objects (default: /tmp/opencode/codec-wasm-build)
-#   CODEC_WASM_EMSDK_DIR  emsdk install location (default: /tmp/opencode/emsdk)
-#   JOBS                  parallel make jobs (default: nproc)
+#   CODEC_WASM_BUILD_DIR      sources/objects (default: /tmp/audivane-codec-build)
+#   CODEC_WASM_EMSDK_DIR      emsdk install location (default: /tmp/audivane-emsdk)
+#   CODEC_WASM_EMSDK_VERSION  emsdk release to install and activate (default: 6.0.13)
+#   JOBS                      parallel make jobs (default: nproc)
+#
+# The build runs under LC_ALL=C (wildcard order sets the LDAC link order), and
+# the LDAC module embeds the absolute libldacdec source path, so the served
+# bytes reproduce only with the default build directory above.
 #
 # Usage:
 #   tools/build_codec_wasm.sh [--clean]
@@ -22,8 +27,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_DIR="${CODEC_WASM_BUILD_DIR:-/tmp/opencode/codec-wasm-build}"
-EMSDK_DIR="${CODEC_WASM_EMSDK_DIR:-/tmp/opencode/emsdk}"
+BUILD_DIR="${CODEC_WASM_BUILD_DIR:-/tmp/audivane-codec-build}"
+EMSDK_DIR="${CODEC_WASM_EMSDK_DIR:-/tmp/audivane-emsdk}"
+EMSDK_VERSION="${CODEC_WASM_EMSDK_VERSION:-6.0.13}"
+export LC_ALL=C
 JOBS="${JOBS:-$(nproc)}"
 
 LIBLC3_VERSION="1.1.3"
@@ -64,9 +71,9 @@ if [ ! -x "$EMSDK_DIR/upstream/emscripten/emcc" ]; then
         git clone --quiet https://github.com/emscripten-core/emsdk.git "$EMSDK_DIR"
     fi
     echo "==> installing emsdk (this downloads a toolchain, once)"
-    (cd "$EMSDK_DIR" && ./emsdk install latest >/dev/null)
+    (cd "$EMSDK_DIR" && ./emsdk install "$EMSDK_VERSION" >/dev/null)
 fi
-(cd "$EMSDK_DIR" && ./emsdk activate latest >/dev/null)
+(cd "$EMSDK_DIR" && ./emsdk activate "$EMSDK_VERSION" >/dev/null)
 # Point the toolchain straight at the install (emsdk_env.sh is not safe under
 # `set -u`; the layout above is stable across recent emsdk releases).
 export EMSDK="$EMSDK_DIR"

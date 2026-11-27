@@ -1,22 +1,24 @@
 # Bundled font licensing
 
-The client uses three type families, all licensed under SIL OFL 1.1,
+The client uses two type families, all licensed under SIL OFL 1.1,
 separately from Audivane's AGPL-3.0-only code:
 
 | Family (CSS name) | Upstream | Files | Notice |
 | --- | --- | --- | --- |
-| Inter | Inter 4 via `@fontsource/inter` 5.3.0, unmodified Latin subsets | `apps/client/src/assets/fonts/inter-latin-{400,500,600}.woff2` | `OFL-Inter.txt`, `apps/client/public/inter-OFL.txt` |
-| Instrument Serif | `@fontsource/instrument-serif` 5.3.0, unmodified Latin subset | `apps/client/src/assets/fonts/instrument-serif-latin-400.woff2` | `OFL-Instrument-Serif.txt`, `apps/client/public/instrument-serif-OFL.txt` |
+| Geist | Geist 1.9.2 (`geist` package), Latin subset of the variable font, weights 400 to 600 | `apps/client/src/assets/fonts/geist-latin-wght.woff2` | `OFL-Geist.txt`, `apps/client/public/geist-OFL.txt` |
 | Audivane Mono Latin | IBM Plex Mono 500 Latin subset, renamed | `apps/client/src/assets/fonts/ibm-plex-mono-latin-500.woff2` | `OFL.txt`, `apps/client/public/ibm-plex-OFL.txt` |
 
-IBM Plex Sans is no longer bundled.
+IBM Plex Sans, Inter and Instrument Serif are no longer bundled.
 
 ## Policies
 
-Inter and Instrument Serif declare no Reserved Font Name. They ship as the
-exact upstream fontsource subsets: the bytes on disk equal the recorded
-upstream original (`sha256 == originalSha256`), and the manifest pins the
-package version and the file inside it (`source`, `upstreamFile`).
+Geist declares no Reserved Font Name, so it keeps its own names. It ships
+as our own subset of the upstream variable font: the manifest pins the
+package version, the source file and its SHA-256 (`source`, `subset.from`,
+`subset.fromSha256`), the weight axis range, the Unicode ranges and the exact
+fonttools commands (`subset.command`), and the checker verifies the file
+hash, the content fingerprint, the name records and the OFL notice. The same
+file ships on the website.
 
 IBM Plex declares the Reserved Font Name "Plex". Its Mono subset uses the
 primary name **Audivane Mono Latin**, including internal
@@ -39,9 +41,9 @@ the input, output and content SHA-256 and the family it belongs to.
 and production lanes) decodes each bundled WOFF2 with no third-party
 dependencies and verifies:
 
-- the manifest inventory matches the bundled files exactly — fonts on disk
+- the manifest inventory matches the bundled files exactly (fonts on disk
   missing from the manifest, manifest entries without a bundled file,
-  duplicate paths and families without files all fail — and the manifest's
+  duplicate paths and families without files all fail), and the manifest's
   license, family policies and pinned fonttools version remain intact;
 - the recorded file hashes match the bytes on disk; renamed copies differ
   from their original and unmodified copies are byte-identical to it;
@@ -59,8 +61,9 @@ dependencies and verifies:
   not self-attesting.
 
 Anyone can reproduce a recorded original fingerprint from the upstream file
-with `node tools/check-subset-fonts.mjs --fingerprint <file>`; for Inter and
-Instrument Serif the upstream files are in the pinned fontsource tarballs.
+with `node tools/check-subset-fonts.mjs --fingerprint <file>`. To reproduce
+the Geist subset, run the recorded `subset.command` on the pinned upstream
+file with `fonttools[woff]==4.61.1`.
 To reproduce the IBM Plex metadata change, use the original WOFF2 files,
 install `fonttools[woff]==4.61.1` in a Python virtual environment and run
 `tools/rename-subset-fonts.py`; it renames only `ibm-plex-*` files,

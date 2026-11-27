@@ -136,7 +136,7 @@ export function SourceCard(props: {
             <b className="file-summary" aria-live="polite">
               {props.name}
             </b>
-            <span>{facts.join(" · ")}</span>
+            <span>{facts.join(", ")}</span>
           </div>
           {props.locked ? (
             <span className="lock-note">Locked during the test</span>

@@ -49,10 +49,10 @@ test("a shared setup round-trips through the link, with and without a file name"
 
   const withSource: SharedTest = {
     ...base,
-    source: { title: "Kind of Blue — Só Danço Samba, take 2 + 3.flac", durationSeconds: 231.44 },
+    source: { title: "Pôr do Sol, Canção Lenta, takes 2 + 3.flac", durationSeconds: 231.44 },
   };
   const fragment = encodeSharedTest(withSource);
-  assert.match(fragment, /&file=Kind%20of%20Blue%20%E2%80%94%20S%C3%B3%20Dan%C3%A7o%20Samba,%20take%202%20%2B%203\.flac&len=231\.4$/);
+  assert.match(fragment, /&file=P%C3%B4r%20do%20Sol,%20Can%C3%A7%C3%A3o%20Lenta,%20takes%202%20%2B%203\.flac&len=231\.4$/);
   const again = parseSharedTestFragment(new URL(sharedTestUrl("https://audivane.app", "/abx/", withSource)).hash);
   assert.equal(again.status, "ok");
   if (again.status !== "ok") return;
@@ -72,7 +72,7 @@ test("a shared setup round-trips through the link, with and without a file name"
     a: Array(4).fill({ codecId: "ogg_vorbis", bitrateKbps: 320 }),
     b: Array(4).fill({ codecId: "opus", bitrateKbps: 320 }),
     plan: { ...base.plan, plannedTrials: 1000, alpha: 0.012345, labelMode: "fixed" },
-    source: { title: "—".repeat(200), durationSeconds: 1799.9 },
+    source: { title: "音".repeat(200), durationSeconds: 1799.9 },
   });
   assert.ok(largest.length <= SHARED_TEST_MAX_FRAGMENT_CHARS, String(largest.length));
 

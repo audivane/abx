@@ -1,7 +1,7 @@
 {
   "license": "OFL-1.1",
   "tool": "fonttools[woff]==4.61.1",
-  "toolUse": "fonttools rewrote the name table of the renamed IBM Plex Mono subset only (tools/rename-subset-fonts.py); unmodified families are byte-identical copies of the upstream subsets.",
+  "toolUse": "fonttools rewrote the name table of the renamed IBM Plex Mono subset only (tools/rename-subset-fonts.py) and made the Geist subset (instancer and pyftsubset, commands below).",
   "families": [
     {
       "family": "Audivane Mono Latin",
@@ -15,27 +15,31 @@
       "use": "Client numbers, times and keyboard hints"
     },
     {
-      "family": "Inter",
-      "upstream": "Inter",
-      "source": "@fontsource/inter@5.3.0",
-      "copyrightHolder": "The Inter Project Authors",
+      "family": "Geist",
+      "upstream": "Geist",
+      "source": "geist@1.9.2",
+      "copyrightHolder": "The Geist Project Authors",
       "reservedFontNames": [],
-      "notice": "OFL-Inter.txt",
-      "modification": null,
-      "use": "Client interface and body text"
-    },
-    {
-      "family": "Instrument Serif",
-      "upstream": "Instrument Serif",
-      "source": "@fontsource/instrument-serif@5.3.0",
-      "copyrightHolder": "The Instrument Serif Project Authors",
-      "reservedFontNames": [],
-      "notice": "OFL-Instrument-Serif.txt",
-      "modification": null,
-      "use": "Client display type: A/B/X letters, trial heading, result headline and statistics"
+      "modification": "Latin subset of the variable font, weight axis limited to 400-600; names, glyph outlines and metrics as upstream.",
+      "notice": "OFL-Geist.txt",
+      "use": "Client interface, headings and body text",
+      "subset": {
+        "from": "dist/fonts/geist-sans/Geist-Variable.ttf",
+        "fromSha256": "b34955a09f71d9ac4b67e54cedb1825d3d5264c7992dbbafa0802080d617e241",
+        "axes": "wght=400:600",
+        "unicodes": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2190-2193,U+2212,U+2215,U+FEFF,U+FFFD",
+        "command": "fonttools varLib.instancer Geist-Variable.ttf wght=400:600 -o Geist-400-600.ttf && pyftsubset Geist-400-600.ttf --unicodes=<unicodes> --layout-features='*' --name-IDs='*' --flavor=woff2 --output-file=geist-latin-wght.woff2"
+      }
     }
   ],
   "files": [
+    {
+      "path": "apps/client/src/assets/fonts/geist-latin-wght.woff2",
+      "family": "Geist",
+      "upstreamFile": "dist/fonts/geist-sans/Geist-Variable.ttf",
+      "sha256": "03ff934200e1a80f68456e8e1424d7bb771e7d5748413a12ffe2ebaa27fbcee5",
+      "contentSha256": "0760cb1e46ba5f508c08b7fe8b854fce177e9896e1fe1f70bb7cc2b9699ce212"
+    },
     {
       "path": "apps/client/src/assets/fonts/ibm-plex-mono-latin-500.woff2",
       "family": "Audivane Mono Latin",
@@ -43,42 +47,6 @@
       "sha256": "9a7b36b2fd1c01f3cc653723559eca1549480adaafef478df27490664517743d",
       "contentSha256": "d41e9930f3d98d876a05dacb76b741a82e0032fe9f4392d02f20d2ff38ebd425",
       "originalContentSha256": "d41e9930f3d98d876a05dacb76b741a82e0032fe9f4392d02f20d2ff38ebd425"
-    },
-    {
-      "path": "apps/client/src/assets/fonts/instrument-serif-latin-400.woff2",
-      "family": "Instrument Serif",
-      "upstreamFile": "files/instrument-serif-latin-400-normal.woff2",
-      "originalSha256": "5eb09b5ac0e28b67c2f041c8ba6d244604ca0c0980d65912ab2d47fed84ddc31",
-      "sha256": "5eb09b5ac0e28b67c2f041c8ba6d244604ca0c0980d65912ab2d47fed84ddc31",
-      "contentSha256": "35f1e210c07d6510c44cc22462c0f7e1d0b0ee34a62096aaeb448cd1ee14253a",
-      "originalContentSha256": "35f1e210c07d6510c44cc22462c0f7e1d0b0ee34a62096aaeb448cd1ee14253a"
-    },
-    {
-      "path": "apps/client/src/assets/fonts/inter-latin-400.woff2",
-      "family": "Inter",
-      "upstreamFile": "files/inter-latin-400-normal.woff2",
-      "originalSha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
-      "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
-      "contentSha256": "54e899759e3af927a12a69ee774b01fc75cf31d382afdc79928720c83f237afa",
-      "originalContentSha256": "54e899759e3af927a12a69ee774b01fc75cf31d382afdc79928720c83f237afa"
-    },
-    {
-      "path": "apps/client/src/assets/fonts/inter-latin-500.woff2",
-      "family": "Inter",
-      "upstreamFile": "files/inter-latin-500-normal.woff2",
-      "originalSha256": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
-      "sha256": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
-      "contentSha256": "519980f751fd5921a6f48294ad3a41a119e99d5e7c77662d3b79a70fad2f3997",
-      "originalContentSha256": "519980f751fd5921a6f48294ad3a41a119e99d5e7c77662d3b79a70fad2f3997"
-    },
-    {
-      "path": "apps/client/src/assets/fonts/inter-latin-600.woff2",
-      "family": "Inter",
-      "upstreamFile": "files/inter-latin-600-normal.woff2",
-      "originalSha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
-      "sha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
-      "contentSha256": "2b08d35efcef58dfcc68926d4ab42aaaccc968277bf54b137c167d4326390a90",
-      "originalContentSha256": "2b08d35efcef58dfcc68926d4ab42aaaccc968277bf54b137c167d4326390a90"
     }
   ]
 }

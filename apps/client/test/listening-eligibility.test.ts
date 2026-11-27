@@ -38,7 +38,7 @@ test("a current raw browser probe is named as raw, not as a historical v1 artifa
   assert.equal(isRawCodecProbeArtifact(raw), true);
   const refusal = listeningArtifactEligibility(raw);
   assert.match(refusal ?? "", /ABX listening requires aligned, level-matched audio/);
-  assert.match(refusal ?? "", /Select aligned \+ gain-matched preparation/);
+  assert.match(refusal ?? "", /Select aligned and gain-matched preparation/);
   assert.doesNotMatch(refusal ?? "", /Historical delivered-validity-v1/);
 });
 

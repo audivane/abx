@@ -1600,7 +1600,7 @@ export class ListeningController {
         canExport: true,
         answered: false,
         notice:
-          "Run sealed. No final verdict is claimed and no further answers/trials are accepted. The export is still verifiable.",
+          "The run is sealed. No final verdict is claimed and no further answers/trials are accepted. The export is still verifiable.",
       });
     } catch (error) {
       if (generation !== this.#generation || this.#disposed) return;

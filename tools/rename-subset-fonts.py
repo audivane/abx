@@ -64,7 +64,7 @@ with tempfile.TemporaryDirectory() as tmp:
     fonts = []
     for directory in DIRECTORIES:
         # Only the IBM Plex subsets carry a Reserved Font Name and are renamed.
-        # Unmodified upstream families (Inter, Instrument Serif) are left as is.
+        # Upstream-named families (Geist) are left as is.
         for path in sorted((ROOT / directory).glob("ibm-plex-*.woff2")):
             fonts.append((path, TTFont(path, recalcTimestamp=False)))
 

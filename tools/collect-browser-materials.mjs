@@ -30,7 +30,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
 const SCHEMA = "audivane-browser-materials-v1";
 const DEFAULT_OUTPUT = path.join(ROOT, "build", "browser-materials");
-const DEFAULT_CACHE = "/tmp/opencode/audivane-browser-source-cache";
+const DEFAULT_CACHE = "/tmp/audivane-browser-source-cache";
 const CORE_VERSION = "0.12.10";
 
 /**
@@ -86,25 +86,26 @@ const NPM_CORE = {
  * together.
  */
 const SUPPLEMENTAL = {
-  version: "2026-11-01",
+  version: "2026-11-27",
   emccVersion: "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.13 (e13ee988ce3d87a738dd8f3661d02223308c412a)",
   files: {
     "lc3_codec.js": "38e628d47124fbde346c219bd81417e30a6c32af2dac88b38c4ceb95267db9c0",
     "lc3_codec.wasm": "ca703c830295ba27b6c45b830e64a4f6ebcf762537703a4d70ac275183e83619",
     "ldac_codec.js": "066f71a7252e8e7a66e6b61247bba6f487fd3a7405f6dd6b90abe4633ff0c21b",
-    "ldac_codec.wasm": "64b40d8932c303df83f233606e67d0361ad577dfc380a37d509a031e416d1750",
+    "ldac_codec.wasm": "47d454c13bbfad979b78a6e0634c03cd03382f388747e1f380cd80caa0dbe4c0",
   },
   reproduction: {
     status: "reproduced-byte-identical-with-documented-conditions",
-    verifiedAt: "2026-11-06",
+    verifiedAt: "2026-11-27",
     conditions: [
       "Emscripten 6.0.13 / emsdk 6.0.13 at emscripten commit e13ee988ce3d87a738dd8f3661d02223308c412a",
-      "LC_ALL=C at build and link time (bash wildcard ordering changes wasm function/link order and therefore the LDAC bytes)",
-      "CODEC_WASM_BUILD_DIR=/tmp/opencode/codec-wasm-build (the absolute source path is embedded in libldacdec.c assertion data; a different path changes ldac_codec.wasm)",
+      "LC_ALL=C at build and link time, exported by tools/build_codec_wasm.sh (bash wildcard ordering changes wasm function/link order and therefore the LDAC bytes)",
+      "CODEC_WASM_BUILD_DIR=/tmp/audivane-codec-build, the script's default (the absolute source path is embedded in libldacdec.c assertion data; a different path changes ldac_codec.wasm)",
+      "emsdk 6.0.13, the script's default CODEC_WASM_EMSDK_VERSION",
       "sources pinned by third_party/wasm/VERSION.txt and tools/build_codec_wasm.sh",
     ],
-    command: "LC_ALL=C CODEC_WASM_BUILD_DIR=/tmp/opencode/codec-wasm-build CODEC_WASM_EMSDK_DIR=/tmp/opencode/emsdk tools/build_codec_wasm.sh",
-    withoutLocalePin: "With the caller's normal (en_US.UTF-8) locale the LDAC link order differs and ldac_codec.wasm becomes ce39de9e03dadf19e5f9fdeb0e4f9143fb57542cb1d5e29c860b94c68c20647e. LC3 is unaffected (ca703c83...).",
+    command: "tools/build_codec_wasm.sh --clean",
+    withoutLocalePin: "The script exports LC_ALL=C, so the caller's locale no longer changes the bytes (checked with en_US.UTF-8). Without that pin the LDAC link order differs and so does ldac_codec.wasm. LC3 is unaffected (ca703c83...).",
     withoutPathPin: "A different CODEC_WASM_BUILD_DIR embeds a different libldacdec.c path and changes ldac_codec.wasm even under LC_ALL=C.",
   },
 };
@@ -619,12 +620,12 @@ const EVIDENCE_BOUNDS = [
     kind: "reproducibility-note",
     component: "lc3_codec / ldac_codec supplemental WASM",
     sourceStatus: "complete",
-    summary: "The supplemental bytes reproduce exactly, but only with LC_ALL=C and the original absolute build directory; tools/build_codec_wasm.sh does not pin either condition.",
+    summary: "The supplemental bytes reproduce exactly with tools/build_codec_wasm.sh as committed: it pins emsdk 6.0.13, exports LC_ALL=C and defaults to the recorded absolute build directory.",
     evidence: [
       "LC3 reproduces at ca703c83... in any locale/build path tested.",
-      "LDAC reproduces at 64b40d89... only with LC_ALL=C and CODEC_WASM_BUILD_DIR=/tmp/opencode/codec-wasm-build.",
-      "With the normal en_US.UTF-8 locale the LDAC link order changes and the wasm becomes ce39de9e...; a different build directory embeds a different libldacdec.c path and also changes the bytes.",
-      "The script installs emsdk 'latest' and records only the emcc version string, not the emsdk/emscripten commit or locale.",
+      "LDAC reproduces at 47d454c1... with LC_ALL=C and CODEC_WASM_BUILD_DIR=/tmp/audivane-codec-build, both script defaults; a clean rebuild was byte-identical.",
+      "A different build directory embeds a different libldacdec.c path and changes the LDAC bytes; overriding CODEC_WASM_BUILD_DIR therefore does not reproduce the served file.",
+      "The script installs and activates the pinned emsdk release and records the emcc version string with its emscripten commit.",
     ],
     interpretation: "The exact source and served bytes are present; the note concerns rebuild hermeticity for these permissively licensed modules.",
   },
@@ -1271,7 +1272,7 @@ function sourceOfferMarkdown(report) {
       : `  - Content SHA-256: \`${component.archive.contentSha256}\` (upstream Gitiles regenerates archive bytes)`;
     const ref = component.ref ? `  - Ref: \`${component.ref}\`` : "";
     const commit = component.commit ? `  - Commit: \`${component.commit}\`` : "";
-    return `- **${component.name} ${component.version}** — ${component.license}
+    return `- **${component.name} ${component.version}**: ${component.license}
   - Source: ${component.archive.url}
 ${ref}
 ${commit}
@@ -1327,15 +1328,14 @@ bit-identical reproduction is not required by this material set.
 ## Rebuilding the supplemental modules
 
 \`\`\`sh
-LC_ALL=C \\
-CODEC_WASM_BUILD_DIR=/tmp/opencode/codec-wasm-build \\
-CODEC_WASM_EMSDK_DIR=/tmp/opencode/emsdk \\
-tools/build_codec_wasm.sh
+tools/build_codec_wasm.sh --clean
 \`\`\`
 
 The absolute build directory and \`LC_ALL=C\` are part of the observed build
 identity: the LDAC WASM embeds the libldacdec source path and its link order
-depends on the locale. The script does not currently enforce either condition.
+depends on the locale. The script exports \`LC_ALL=C\`, pins emsdk 6.0.13 and
+defaults to the recorded build directory \`/tmp/audivane-codec-build\`; do not
+override \`CODEC_WASM_BUILD_DIR\` when reproducing the served LDAC module.
 With Emscripten 6.0.13 the rebuild reproduces both served modules exactly; see
 \`provenance/supplemental-reproduction.json\`.
 

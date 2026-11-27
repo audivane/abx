@@ -1,6 +1,6 @@
 # Audivane release preparation
 
-Status: **1.1.2, browser-only.** The version is assigned across workspace
+Status: **1.1.3, browser-only.** The version is assigned across workspace
 manifests, internal dependencies, lockfiles and application metadata. Read the
 [changelog](../CHANGELOG.md) for the current notes.
 
@@ -29,10 +29,10 @@ npm run test:browser
 
 `npm run build:website-demo` writes `build/website-demo/` with:
 
-- `abx-demo-<version>.tar.zst` — the client built under `/abx/`;
-- `audivane-source.tar.gz` — matching application source;
+- `abx-demo-<version>.tar.zst`: the client built under `/abx/`;
+- `audivane-source.tar.gz`: matching application source;
 - `browser-codec-materials.tar.gz`, `NOTICES.md`, `SOURCE-OFFER.md` and
-  `REPORT.json` — exact codec source, build and notice materials;
+  `REPORT.json`: exact codec source, build and notice materials;
 - `SHA256SUMS.txt`, `release.json` and `manifest.json`.
 
 The build refuses source that changes while it compiles or collects materials.

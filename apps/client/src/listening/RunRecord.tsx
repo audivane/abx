@@ -71,7 +71,7 @@ export function RunRecord(props: {
           <dd>
             {stats.scoredTrials
               ? `${Math.round((stats.correctTrials / stats.scoredTrials) * 100)}%`
-              : "—"}
+              : "-"}
           </dd>
         </div>
         <div>
@@ -113,7 +113,7 @@ export function RunRecord(props: {
           <dt>Significance threshold</dt>
           <dd>{plan.alpha}</dd>
           <dt>Required correct</dt>
-          <dd>{stats.requiredCorrect ?? "—"}</dd>
+          <dd>{stats.requiredCorrect ?? "-"}</dd>
           <dt>Labels</dt>
           <dd>{plan.labelMode === "fixed" ? "Fixed" : "Randomized"}</dd>
           <dt>Readiness check</dt>

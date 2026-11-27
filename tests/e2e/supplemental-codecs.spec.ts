@@ -154,7 +154,7 @@ test("supplemental codec requests without configured asset URLs refuse before so
   const result = await page.evaluate(async (bytes): Promise<{ refusals: string[]; sourceRead: boolean;
     lc3: { availability: string } | undefined; ldac: { availability: string } | undefined }> => {
     // Same core, deliberately NO supplemental URLs: an unconfigured module is
-    // equivalent to a missing native helper — a refusal, never a substitution.
+    // equivalent to a missing native helper: a refusal, never a substitution.
     // @ts-expect-error Test-only bundle served by the route above.
     const { BrowserPreparationEngine } = await import("/supplemental-engine.js");
     const engine = new BrowserPreparationEngine({
@@ -319,7 +319,7 @@ for (const { stages, sourceRate, channels, minSnrDb } of supplementalCases) {
       expect(result.artifact.disclosures.some((line: string) => line.includes("hegdi/libldacdec"))).toBe(true);
     }
 
-    // Audio-correctness gate: same source, same layout, no pair correction —
+    // Audio-correctness gate: same source, same layout, no pair correction:
     // a real lossy round trip must remain clearly related to its input.
     const snr = computeSnrDb(aBytes, bBytes);
     expect(Number.isFinite(snr), `SNR must be finite, got ${String(snr)}`).toBe(true);
@@ -335,7 +335,7 @@ for (const { stages, sourceRate, channels, minSnrDb } of supplementalCases) {
       // LDAC's measured basis is ldac-container-bytes-over-header-sample-
       // duration with the documented container overhead. Mono encodes use
       // libldac's half-stereo quality mode (165/330/495 kbps for 330/660/990
-      // at 48 kHz), so the gate compares the documented full container model —
+      // at 48 kHz), so the gate compares the documented full container model,
       // never the requested stereo number (the stale reason the mono cases
       // failed). This fixed 0.6 s fixture has exactly 28,800 internal input
       // frames, a multiple of the 128-frame LDAC block; an extra input frame

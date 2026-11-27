@@ -5,7 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 /**
- * P1 CI contract for the supplemental LC3/LDAC browser tier: the mandatory, unfiltered
+ * CI contract for the supplemental LC3/LDAC browser tier: the mandatory, unfiltered
  * browser lane (browser-codecs) now asserts an eleven-codec build served from
  * the gitignored third_party/wasm/bin artifacts. This guards that CI
  * provisions the exact pinned builds BEFORE the mandatory browser tests, that

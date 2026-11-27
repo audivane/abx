@@ -13,7 +13,7 @@ function shortChain(stages: readonly CodecSelection[]): string {
   return stages.map(shortStage).join(" → ");
 }
 
-/** "Opus 128 vs AAC 256 · 16 trials · blind labels". */
+/** "Opus 128 vs AAC 256, 16 trials, blind labels". */
 export function sharedTestSummary(test: SharedTest): string {
   const parts = [
     `${shortChain(test.a)} vs ${shortChain(test.b)}`,
@@ -22,7 +22,7 @@ export function sharedTestSummary(test: SharedTest): string {
   ];
   if (test.canaryEnabled) parts.push("readiness check");
   if (test.sampleRateMode === "force_48k") parts.push("48 kHz");
-  return parts.join(" · ");
+  return parts.join(", ");
 }
 
 function sameStages(a: readonly CodecSelection[], b: readonly CodecSelection[]): boolean {

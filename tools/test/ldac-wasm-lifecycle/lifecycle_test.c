@@ -31,8 +31,8 @@
  *       -Itools/test/ldac-wasm-lifecycle \
  *       tools/test/ldac-wasm-lifecycle/lifecycle_test.c tools/ldac_wasm.c \
  *       -Wl,--wrap=malloc,--wrap=calloc,--wrap=free \
- *       -o /tmp/opencode/ldac-wasm-lifecycle/lifecycle_test
- *   /tmp/opencode/ldac-wasm-lifecycle/lifecycle_test
+ *       -o /tmp/audivane-ldac-lifecycle/lifecycle_test
+ *   /tmp/audivane-ldac-lifecycle/lifecycle_test
  *
  * Exit status 0 with only "ok:" lines, nonzero otherwise.
  */
@@ -346,7 +346,7 @@ static void test_encoder_handle_failure(void) {
     check(g_init_calls == 0, "no init is attempted without a handle");
     check(g_free_handle_calls == 0, "no handle exists to release");
     check(allocs_balanced(),
-          "handle-acquisition failure releases packet AND pending buffers");  /* P2 fix */
+          "handle-acquisition failure releases packet AND pending buffers");
     check(g_out_count == 0 && g_out_bytes == 0, "nothing leaks at all");
 }
 
@@ -361,7 +361,7 @@ static void test_encoder_init_failure(void) {
           "encoder_new fails when the libldac init is rejected");
     check(g_free_handle_calls == 1, "the acquired handle is released on init failure");
     check(allocs_balanced(),
-          "init failure releases packet AND pending buffers");  /* P2 fix */
+          "init failure releases packet AND pending buffers");
     check(g_out_count == 0 && g_out_bytes == 0, "nothing leaks at all");
 }
 

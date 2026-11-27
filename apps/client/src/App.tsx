@@ -92,7 +92,7 @@ const PREPARATION_MODE_LABELS: Readonly<
   Record<BrowserPreparationMode, string>
 > = {
   "codec-probe-only": "Raw codec-stage measurement (manual diagnostic)",
-  "aligned-gain-matched-v1": "Aligned + gain-matched preparation (default)",
+  "aligned-gain-matched-v1": "Aligned and gain-matched preparation (default)",
 };
 
 interface SampleUrls {
@@ -203,7 +203,7 @@ function CapabilitiesPanel(props: {
           <p className="section-meta">Probing the local runtime</p>
         </div>
         <p role="status" className="hint">
-          Loading the local WASM core and probing real encoders/decoders…
+          Loading the local WASM core and checking each encoder and decoder…
         </p>
       </section>
     );
@@ -254,7 +254,7 @@ function CapabilitiesPanel(props: {
           <dd>In this browser</dd>
           <dt>File limit</dt>
           <dd>
-            {Math.round(capabilities.maxInputBytes / (1024 * 1024))} MiB ·{" "}
+            {Math.round(capabilities.maxInputBytes / (1024 * 1024))} MiB,{" "}
             {Math.floor(capabilities.maxDurationSeconds / 60)} min
           </dd>
           <dt>Channels</dt>
@@ -868,7 +868,7 @@ function RuntimeApp({
             : busy || resetting || changingSource
               ? "Wait for the current operation to finish before preparing the test."
               : !alignedPreparationSupported
-                ? "This build does not advertise aligned + gain-matched preparation."
+                ? "This build does not advertise aligned and gain-matched preparation."
                 : null;
 
   const planFieldsWithCalibration = useMemo<ListeningPlanFields>(
@@ -1226,8 +1226,8 @@ function RuntimeApp({
     (session === "running" || session === "configured") &&
     !prepareTestBusy;
   const stripPlan = snapshot
-    ? `${snapshot.plan.plannedTrials ?? "Practice"} trials · α ${snapshot.plan.alpha} · ${snapshot.plan.labelMode === "fixed" ? "fixed labels" : "randomized"}`
-    : `${planFields.plannedTrials} trials · α ${planFields.alpha} · ${planFields.labelMode === "fixed" ? "fixed labels" : "randomized"}`;
+    ? `${snapshot.plan.plannedTrials ?? "Practice"} trials, α ${snapshot.plan.alpha}, ${snapshot.plan.labelMode === "fixed" ? "fixed labels" : "randomized"}`
+    : `${planFields.plannedTrials} trials, α ${planFields.alpha}, ${planFields.labelMode === "fixed" ? "fixed labels" : "randomized"}`;
   const lifecycleLabel =
     snapshot === null
       ? null
@@ -1240,14 +1240,14 @@ function RuntimeApp({
             : null;
 
   const limitLine = caps
-    ? `Up to ${Math.floor(caps.maxDurationSeconds / 60)} min · ${Math.round(caps.maxInputBytes / (1024 * 1024))} MiB · 32-bit file`
-    : "Up to 30 min · 512 MiB · 32-bit file";
+    ? `Up to ${Math.floor(caps.maxDurationSeconds / 60)} min, ${Math.round(caps.maxInputBytes / (1024 * 1024))} MiB, 32-bit file`
+    : "Up to 30 min, 512 MiB, 32-bit file";
   const advancedSummary = [
     rateMode === "native" ? "Native source rate" : "48 kHz delivery",
     preparationMode === "aligned-gain-matched-v1"
-      ? "aligned + gain-matched"
+      ? "aligned and gain-matched"
       : "raw codec probe for diagnostics",
-  ].join(" · ");
+  ].join(", ");
 
   return (
     <div className="app" data-runtime={kind} data-view={view}>
@@ -1534,7 +1534,7 @@ function RuntimeApp({
                     >
                       {status === "preparing" ? (
                         <>
-                          <strong>Preparing.</strong>{" "}
+                          <strong>Preparing the test audio.</strong>{" "}
                           {progress
                             ? `${phaseLabel(progress.phase)}: ${progress.message}`
                             : "Starting…"}
@@ -1545,13 +1545,14 @@ function RuntimeApp({
                         </strong>
                       ) : status === "cancelled" ? (
                         <>
-                          <strong>Cancelled.</strong> Worker terminated and
-                          temporary files removed; retry is safe.
+                          <strong>Preparation was cancelled.</strong> The worker
+                          stopped and its temporary files were removed, so you
+                          can try again.
                         </>
                       ) : status === "complete" ? (
                         <strong>Diagnostic artifacts ready.</strong>
                       ) : status === "error" ? (
-                        <strong>Preparation failed.</strong>
+                        <strong>Preparation stopped with an error.</strong>
                       ) : null}
                     </div>
                     {status === "preparing" && (
@@ -1625,7 +1626,6 @@ function RuntimeApp({
                     onClick={() => setView(terminal ? "evidence" : "listen")}
                   >
                     {terminal ? "View results" : "Back to the test"}
-                    <span aria-hidden="true"> →</span>
                   </button>
                 </div>
               ) : (
@@ -1637,7 +1637,7 @@ function RuntimeApp({
                     disabled={!primaryCanPrepare}
                     onClick={prepareTest}
                   >
-                    Prepare test<span aria-hidden="true"> →</span>
+                    Prepare test
                   </button>
                   <p id="prepare-hint">
                     {primaryBlockedReason ??
@@ -1749,7 +1749,7 @@ function RuntimeApp({
                     disabled={!primaryCanPrepare}
                     onClick={prepareTest}
                   >
-                    Prepare test<span aria-hidden="true"> →</span>
+                    Prepare test
                   </button>
                 ) : null}
               </div>

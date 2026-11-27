@@ -144,7 +144,7 @@ export function listeningArtifactEligibility(
   if (isRawCodecProbeArtifact(artifact)) {
     return (
       "ABX listening requires aligned, level-matched audio. " +
-      "Select aligned + gain-matched preparation and prepare again."
+      "Select aligned and gain-matched preparation and prepare again."
     );
   }
   if (artifact.validity === undefined) {
@@ -186,7 +186,7 @@ export function listeningArtifactEligibility(
     return (
       "The listening flow requires the shared aligned-gain-matched-v1 prepared pair. " +
       "This artifact uses raw codec-probe-only delivery (or an unsupported policy). " +
-      "Select “Aligned + gain-matched preparation”, prepare again, and keep this diagnostic lab as-is. " +
+      "Select “Aligned and gain-matched preparation”, prepare again, and keep this diagnostic lab as-is. " +
       "No fallback, upload or codec substitution was applied."
     );
   }

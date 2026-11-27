@@ -430,7 +430,7 @@ test("cancel and reset during the real canary stage terminate the worker and per
     (window as unknown as { __canaryAction?: string | null }).__canaryAction = "cancel";
   });
   await page.getByRole("button", { name: "Prepare diagnostic artifacts" }).click();
-  await expect(page.locator(".run-status")).toContainText("Cancelled.", { timeout: 150_000 });
+  await expect(page.locator(".run-status")).toContainText("Preparation was cancelled.", { timeout: 150_000 });
   await expect(page.locator(".evidence-audio")).toHaveCount(0);
 
   const afterCancel = await page.evaluate(() => (

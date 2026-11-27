@@ -3,7 +3,7 @@
 ## Design contract
 
 Guided mode. The approved reference is the November 2026 redesign mockup
-(DSP blue accent). The interface is a three-step flow — Setup, Listen, Results —
+(DSP blue accent). The interface is a three-step flow (Setup, Listen, Results)
 in one centred column. It is a presentation layer only: do not change the test
 method, scoring, gating, preparation, evidence or export contracts to simplify
 the UI.
@@ -20,7 +20,8 @@ the withheld-audio note in Results).
 
 System, Light, Graphite and Midnight, chosen from the theme button's menu in
 the top bar and stored in `localStorage["audivane.theme"]`. System follows
-`prefers-color-scheme` and resolves to Light or Midnight. An unknown stored
+`prefers-color-scheme` and resolves to Light or Graphite; Midnight is an
+explicit choice. An unknown stored
 value (including the retired `dark`) falls back to System; there is no
 migration. The resolved skin is written to `html[data-theme]` before React
 paints.
@@ -31,8 +32,13 @@ Background, panel, line, text and status values (`--bg`, `--panel`,
 app's skins (`dsp/app/src/styles/tokens.css`). Keep them in sync by copying
 values, not by importing across repositories.
 
-Light is warm paper, shared with the website and DSP: `--bg #f5f3ee`,
-`--panel #fffdf9`, `--panel-2 #f0ece4`, warm greys for lines and text.
+Light is neutral white, shared with the website and DSP: `--bg #ffffff`,
+`--panel #ffffff`, `--panel-2 #f6f6f7`, lines `#dcdde1` / `#c4c6cc`, ink
+`#141417`, muted `#55575d`, neutral shadows.
+
+On audivane.app the website's header sits above the app and its theme switch
+replaces ABX's (see the site shell contract at the top of the Shell section in
+`src/styles.css`).
 
 The accent is DSP's blue, copied from the DSP skins:
 
@@ -46,9 +52,9 @@ Contrast (WCAG 2.2 AA). Some shared values fail as small text or as a
 control boundary, so the client adds AA-safe roles and uses them for text and
 controls:
 
-- `--subtle` replaces `--faint` for any text (Light `--faint` is 3.2–3.7:1).
+- `--subtle` replaces `--faint` for any text (Light `--faint` is 3.7–4.0:1, too low beside `--muted`).
   `--faint` is decoration only.
-- `--accent-text` for accent-coloured small text (Light `#1d4ed8`, 6.0:1 on
+- `--accent-text` for accent-coloured small text (Light `#1d4ed8`, 6.7:1 on
   `--bg`; Graphite `#7fa6f2`; Midnight `#6b9fff`; all ≥4.5:1 on every
   surface).
 - `--ok-text`, `--warn-text`, `--bad-text` for status words (Light
@@ -60,29 +66,37 @@ controls:
 - `--focus` draws the 2px focus ring (accent text colour, ≥3:1).
 - Graphite `--muted` is `#a3a8b1`, lifted from DSP's `#9a9fa8` so 12px muted
   text keeps 4.5:1 on `--raised` (the theme menu).
-- Accent fills carry `--accent-fg` text: 5.8:1 (Light), 6.9:1 (Graphite),
+- Accent fills carry `--accent-fg` text: 5.2:1 (Light), 6.9:1 (Graphite),
   7.6:1 (Midnight).
 - Disabled primary buttons turn neutral (`--panel-2` fill, `--subtle` text)
   instead of a faded accent.
 
 ### Typography
 
-Base text is 15px Inter (400/500/600). Instrument Serif is for display
-moments only: the big A/B/X letters, the trial heading ("Trial 3 of 8"), the
-Results headline, big statistic numbers and the brand's "ABX". IBM Plex Mono
+Base text is 15px Geist (variable, 400 to 600). Display moments (the big A/B/X
+letters, the trial heading, the Results headline, big statistic numbers and
+the brand's "ABX") use Geist 600, not a serif. Section and card headings are
+normal-case 15px 600 `--fg`, never uppercase or letter-spaced. IBM Plex Mono
 500 (shipped renamed as Audivane Mono Latin) is for numbers, times,
-measurements and keyboard hints. All three are self-hosted Latin subsets in
+measurements and keyboard hints. Both are self-hosted Latin subsets in
 `src/assets/fonts`; nothing is fetched at runtime. `npm run check:fonts`
 verifies them against `third_party/fonts.json` (see
 `docs/font-licensing.md`). Glyphs outside the Latin subsets (α, ✓, ✗, →)
 fall back to system fonts.
+
+### Copy and decoration
+
+Separate items with commas or words, not middots (→ stays only between codec
+stages, where it means order). No decorative arrows on buttons or links, no
+status dots, coloured left borders, pills or badges, glows, gradients or
+scroll fades. Notices are full sentences.
 
 ### Layout and components
 
 - Content column: `min(1180px, 100% − 2 × gutter)`, gutter 32px, 24px at
   ≤1000px, 16px at ≤720px.
 - Cards: `--panel`, 1px `--line`, 14px radius, 20–22px padding. Card titles
-  are 13px uppercase `--muted` with an optional right-aligned meta.
+  are normal-case 15px headings with an optional right-aligned meta.
 - Buttons: `primary` (accent fill), `ghost` (control border), `quiet` (text),
   `small`. The round transport button and A/B/X tiles use the accent when
   selected.
@@ -93,7 +107,7 @@ fall back to system fonts.
 
 ### Top bar
 
-Left: brand mark, "Audivane" and "ABX" (serif, accent). On the website demo
+Left: brand mark, "Audivane" and "ABX" (sans, accent). On the website demo
 the brand links home. Centre: the stepper, 1 Setup → 2 Listen → 3 Results.
 Each step is a button with `data-state`:
 
@@ -105,8 +119,8 @@ Each step is a button with `data-state`:
 - Results opens once prepared audio or a run exists. During a running test it
   stays reachable for redacted exports and run management.
 
-Right: "Local · nothing uploaded" badge (shortened, then hidden, on narrow
-widths), the theme menu and the ⓘ About and diagnostics dialog. The dialog
+Right: "Local, nothing uploaded" as plain muted text (shortened, then hidden, on narrow
+widths), the theme menu (hidden under the website's header) and the ⓘ About and diagnostics dialog. The dialog
 holds the runtime, the source offer link and Runtime capabilities (codecs and
 limits). Nothing is pinned to the page bottom; an in-flow footer at the end of
 the column repeats "Source code (AGPL-3.0)".
@@ -115,7 +129,7 @@ the column repeats "Source code (AGPL-3.0)".
 
 Shown under the top bar while a test is preparing or held (any view): file,
 A chain vs B chain, plan summary and output device, then either "Locked
-during the test" with End test (running), "Preparing · setup locked"
+during the test" with End test (running), "Preparing, setup locked"
 (preparing), or the lifecycle chip (terminal), with View results when on
 Setup. It keeps one row down to 720px (plan
 and output drop out first). On phones it wraps: the file on its own line,
@@ -132,8 +146,8 @@ Two columns (main + 340px side) that collapse below 1000px.
   visually hidden but focusable (`#source-file`, "Audio file"). Formats and
   limits sit in a disclosure that contains exactly: “WAV, FLAC, MP3, AAC, M4A,
   Ogg and Opus.”
-- "What are you comparing?": two side cards, A vs B, each with a big serif
-  letter, the chain label, codec and bitrate selects per stage and
+- "What are you comparing?": two columns, A and B, separated by a rule (no
+  boxes inside the card), each with a big letter, the chain label, codec and bitrate selects per stage and
   "+ Add stage" up to the advertised limit (hidden at the limit).
 - Advanced processing and diagnostics: collapsed card whose summary states
   the rate and preparation policy; it keeps the rate and manual policy
@@ -142,7 +156,7 @@ Two columns (main + 340px side) that collapse below 1000px.
 - Side column: Test plan (summary, readiness switch with About, Edit plan
   disclosure, validation and Apply plan when a run is configured), Output
   device (select, Refresh, chooser when exposed, Routing details), and
-  Prepare test → with its hint or the reason it is blocked.
+  Prepare test with its hint or the reason it is blocked.
 - Shared test links (`#a=opus-128&b=aac-256&trials=16&labels=blind`) fill the source-free setup on load and show
   a banner (summary, the sharer's file when included, unavailable codecs,
   Clear); the fragment is then removed. Nothing prepares or plays until the
@@ -155,9 +169,9 @@ Two columns (main + 340px side) that collapse below 1000px.
 
 Max 900px wide.
 
-- Head: "Trial N of M" (serif) with the reserved Correct/Incorrect slot, a
+- Head: "Trial N of M" with the reserved Correct/Incorrect slot, a
   one-line subline (readiness check or preparation message), "K of M
-  answered" and a segmented bar (answered / current / pending only — never
+  answered" and a segmented bar (answered / current / pending only, never
   correctness) or a continuous bar above 40 trials. Segments stay on one
   row, shrinking from 30px inside a 420px slot. Cancel preparation
   replaces the count while preparing. Heights are reserved so the stage does
@@ -194,13 +208,13 @@ buttons and hint row are hidden while shortcuts are off.
 
 ### Results
 
-- Kicker (lifecycle · trial count) and the serif verdict from the existing
+- Kicker (lifecycle, trial count) and the verdict from the existing
   wording (`resultHeading`), then a plain-language explanation derived from
   the computed exact one-sided p-value and α (`listening/explanation.ts`):
   a non-significant result never proves the sides identical, a significant
   one is evidence from this run and not a certification, and ended-early,
   void, failed-check and running runs draw no verdict.
-- Kicker colour and dot distinguish completed, ended early (warn), void and
+- Kicker colour distinguishes completed, ended early (warn), void and
   failed checks (bad) and in progress (muted), always with words.
 - Per-trial chips (terminal only), the stats card (Correct, Accuracy,
   p-value (one-sided), 95% confidence interval), preparation disclosure and

@@ -5,12 +5,12 @@ async function chooseTheme(page: Page, label: "System" | "Light" | "Graphite" | 
   await page.getByRole("radio", { name: new RegExp(`^${label}`) }).click();
 }
 
-test("System, Light, Graphite and Midnight persist; System follows the OS as Light or Midnight", async ({ page }) => {
+test("System, Light, Graphite and Midnight persist; System follows the OS as Light or Graphite", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   const html = page.locator("html");
   await expect(page.getByRole("button", { name: "Theme: System" })).toBeVisible();
-  await expect(html).toHaveAttribute("data-theme", "midnight");
+  await expect(html).toHaveAttribute("data-theme", "graphite");
   await page.emulateMedia({ colorScheme: "light" });
   await expect(html).toHaveAttribute("data-theme", "light");
 
@@ -30,7 +30,7 @@ test("System, Light, Graphite and Midnight persist; System follows the OS as Lig
 
   await chooseTheme(page, "System");
   await page.emulateMedia({ colorScheme: "dark" });
-  await expect(html).toHaveAttribute("data-theme", "midnight");
+  await expect(html).toHaveAttribute("data-theme", "graphite");
   await page.emulateMedia({ colorScheme: "light" });
   await expect(html).toHaveAttribute("data-theme", "light");
 });
@@ -48,7 +48,7 @@ test("clicking an option's text, not just its radio, chooses the theme and close
   }
   // The System row's helper text is part of the same option.
   await page.getByRole("button", { name: /^Theme: / }).click();
-  await page.getByText("Light or Midnight").click();
+  await page.getByText("Light or Graphite").click();
   await expect(html).toHaveAttribute("data-theme-preference", "system");
   // A press inside the menu that is not an option leaves it open; Tab still closes it.
   await page.getByRole("button", { name: /^Theme: / }).click();
@@ -64,8 +64,46 @@ test("an unknown stored theme, including the retired Dark value, falls back to S
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-theme-preference", "system");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "midnight");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "graphite");
   await expect(page.getByRole("button", { name: "Theme: System" })).toBeVisible();
+});
+
+test("under the website's header, the site's theme switch drives ABX and replaces its control", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  // The website marks <html> and sets its container width and gutter.
+  const markShell = (): Promise<void> =>
+    page.evaluate(() => {
+      const root = document.documentElement;
+      root.setAttribute("data-site-shell", "");
+      root.style.setProperty("--site-shell-max", "1328px");
+      root.style.setProperty("--site-shell-gutter", "40px");
+      root.style.setProperty("--site-shell-h", "72px");
+    });
+  await markShell();
+  const html = page.locator("html");
+  await expect(page.getByRole("button", { name: /^Theme: / })).toBeHidden();
+  await expect(page.locator(".topbar .brand")).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Workspace steps" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "About and diagnostics" })).toBeVisible();
+  await expect(page.locator(".topbar")).toContainText("Local, nothing uploaded");
+  const dispatch = (value: string): Promise<void> =>
+    page.evaluate((detail) => {
+      localStorage.setItem("audivane.theme", detail);
+      window.dispatchEvent(new CustomEvent("audivane:theme", { detail }));
+    }, value);
+  await dispatch("graphite");
+  await expect(html).toHaveAttribute("data-theme", "graphite");
+  await dispatch("system");
+  await expect(html).toHaveAttribute("data-theme-preference", "system");
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await dispatch("sepia");
+  await expect(html).toHaveAttribute("data-theme-preference", "system");
+  await page.reload();
+  await markShell();
+  await dispatch("light");
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await expect(html).toHaveAttribute("data-theme-preference", "light");
 });
 
 test("the theme menu works by keyboard: arrows choose, Escape closes and restores focus", async ({ page }) => {
@@ -83,6 +121,34 @@ test("the theme menu works by keyboard: arrows choose, Escape closes and restore
   await expect(page.getByRole("radio")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Theme: Graphite" })).toBeFocused();
 });
+
+for (const shell of [true, false]) {
+  test(`at 320px the steps never cover the About button (${shell ? "under the site header" : "standalone"})`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/");
+    if (shell)
+      await page.evaluate(() => {
+        const root = document.documentElement;
+        root.setAttribute("data-site-shell", "");
+        root.style.setProperty("--site-shell-max", "1328px");
+        root.style.setProperty("--site-shell-gutter", "16px");
+        root.style.setProperty("--site-shell-h", "64px");
+      });
+    const about = page.getByRole("button", { name: "About and diagnostics" });
+    const aboutBox = (await about.boundingBox())!;
+    for (const name of ["Setup", "Listen", "Results"]) {
+      const step = page.getByRole("button", { name, exact: true });
+      await expect(step).toBeVisible();
+      const box = (await step.boundingBox())!;
+      const overlaps = box.x < aboutBox.x + aboutBox.width && aboutBox.x < box.x + box.width
+        && box.y < aboutBox.y + aboutBox.height && aboutBox.y < box.y + box.height;
+      expect(overlaps, `${name} overlaps About`).toBe(false);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+    await about.click();
+    await expect(page.getByRole("dialog", { name: "About and diagnostics" })).toBeVisible();
+  });
+}
 
 test("About and diagnostics holds runtime capabilities and the source offer, and restores focus", async ({ page }) => {
   await page.goto("/");

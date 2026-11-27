@@ -56,10 +56,10 @@ function tamperFont(root, relative, { updateFileHash = false, mutate }) {
 test("bundled font subsets match the recorded manifest and preserve glyph, metric and copyright data", async () => {
   const summary = await checkSubsetFonts();
   assert.equal(summary.files, readManifest(ROOT).files.length);
-  assert.equal(summary.files, 5, "expected the full 5-file bundled font inventory");
-  assert.equal(summary.families, 3, "expected the renamed IBM Plex Mono family plus Inter and Instrument Serif");
+  assert.equal(summary.files, 2, "expected the full 2-file bundled font inventory");
+  assert.equal(summary.families, 2, "expected the renamed IBM Plex Mono family plus Geist");
   assert.equal(summary.updated, false);
-  for (const file of readManifest(ROOT).files) {
+  for (const file of readManifest(ROOT).files.filter((entry) => entry.family !== "Geist")) {
     assert.equal(file.contentSha256, file.originalContentSha256, `${file.path}: renamed content fingerprint must equal the recorded upstream fingerprint`);
   }
 });
@@ -133,43 +133,48 @@ test("--fingerprint reports the manifest's recorded fingerprint for a bundled su
   assert.equal(actual, file.contentSha256);
 });
 
-test("the client bundles Inter, Instrument Serif and the renamed Plex Mono, and no longer the Plex Sans subsets", () => {
+test("the client bundles Geist and the renamed Plex Mono, and no longer Inter or the Plex Sans subsets", () => {
   const client = readManifest(ROOT).files
     .filter((entry) => entry.path.startsWith("apps/client/"))
     .map((entry) => [path.basename(entry.path), entry.family]);
   assert.deepEqual(client.sort(), [
+    ["geist-latin-wght.woff2", "Geist"],
     ["ibm-plex-mono-latin-500.woff2", "Audivane Mono Latin"],
-    ["instrument-serif-latin-400.woff2", "Instrument Serif"],
-    ["inter-latin-400.woff2", "Inter"],
-    ["inter-latin-500.woff2", "Inter"],
-    ["inter-latin-600.woff2", "Inter"],
   ]);
 });
 
-test("the font check rejects an unmodified upstream subset whose bytes no longer match the original", async (t) => {
+test("the font check rejects changed Geist glyph data even when the file hash was re-recorded", async (t) => {
   const root = await fixture(t);
-  const target = "apps/client/src/assets/fonts/inter-latin-400.woff2";
+  const target = "apps/client/src/assets/fonts/geist-latin-wght.woff2";
   tamperFont(root, target, { updateFileHash: true, mutate(stream, parsed) {
-    const name = parsed.tables.find((table) => table.tag === "name");
-    assert.ok(name, "expected a name table in the bundled subset");
-    const original = Buffer.from("Inter", "utf16le").swap16();
-    const index = stream.indexOf(original, name.streamOffset);
-    assert.notEqual(index, -1, "expected the Inter family string inside the name table");
-    Buffer.from("Intrr", "utf16le").swap16().copy(stream, index);
+    const glyf = parsed.tables.find((table) => table.tag === "glyf");
+    assert.ok(glyf, "expected a glyf table in the Geist subset");
+    stream[glyf.streamOffset + 100] ^= 0xff;
   } });
-  await assert.rejects(checkSubsetFonts({ root }), /unmodified upstream subset differs from its original bytes/);
+  await assert.rejects(checkSubsetFonts({ root }), /content fingerprint .* does not match the recorded contentSha256/);
+});
+
+test("the font check requires a Geist subset to record its source, code points and command", async (t) => {
+  const root = await fixture(t);
+  const manifest = readManifest(root);
+  delete manifest.families.find((entry) => entry.family === "Geist").subset.command;
+  writeFileSync(manifestPath(root), `${JSON.stringify(manifest, null, 2)}\n`);
+  await assert.rejects(checkSubsetFonts({ root }), /subset.command must record the pyftsubset call/);
 });
 
 test("the font check requires each family's OFL notice beside its fonts", async (t) => {
   const root = await fixture(t);
-  await fs.rm(path.join(root, "apps/client/src/assets/fonts/OFL-Instrument-Serif.txt"));
-  await assert.rejects(checkSubsetFonts({ root }), /Instrument Serif OFL notice is missing/);
+  await fs.rm(path.join(root, "apps/client/src/assets/fonts/OFL-Geist.txt"));
+  await assert.rejects(checkSubsetFonts({ root }), /Geist OFL notice is missing/);
 });
 
 test("the font check refuses a family with a Reserved Font Name that is not renamed", async (t) => {
   const root = await fixture(t);
   const manifest = readManifest(root);
-  manifest.families.find((entry) => entry.family === "Inter").reservedFontNames = ["Inter"];
+  const geist = manifest.families.find((entry) => entry.family === "Geist");
+  geist.reservedFontNames = ["Geist"];
+  delete geist.subset;
+  geist.source = "@fontsource/geist@5.3.0";
   writeFileSync(manifestPath(root), `${JSON.stringify(manifest, null, 2)}\n`);
   await assert.rejects(checkSubsetFonts({ root }), /must be renamed to an Audivane Latin family/);
 });

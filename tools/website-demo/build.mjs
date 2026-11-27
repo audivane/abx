@@ -20,7 +20,7 @@ import { copyWasmAssets } from '../copy-wasm-assets.mjs';
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const websiteBase = '/abx/';
 export const websiteUrl = 'https://audivane.app/abx/';
-export const siteTitle = 'Audivane ABX — Blind audio comparisons';
+export const siteTitle = 'Audivane ABX: Blind audio comparisons';
 export const siteDescription =
   'Compare two audio codec chains from your own file and take a blind ABX ' +
   'listening test in your browser. Audio stays on your device.';
